@@ -1,0 +1,2188 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#121212">
+  <title>MelodyStream - Ücretsiz ve Reklamsız Müzik Dinleme Uygulaması</title>
+  
+  <!-- Favicon ve diğer meta etiketleri -->
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGASURBVFhH7ZY9TsNAEIXfzK4dK0oKJCQKJIoU/AE/QUVJwQ9QUVHwA1RUFBQU/AEVBQUFQqKgQEKioEBCQkJCQrG9O7M0a8d2bMf2JhQc6UjrzLx5b2Z2bQcGBgYGBv4zQohxIcQcY2yWMTbFGBtnjI0xxkYYY8OMsSHG2CBjrJ8x1scY62WM9TDGuhljXYyxTsZYB2OsnTHWxhh7Y4y9MsZeGGPPjLEnxtgjY+yBMXbPGLtjjN0yxm4YY9eMsSvG2CVj7IIxds4YO2OMnTLGThhjx4yxI8bYIWPsgDG2zxjbY4ztMsa2GWNbjLFNxtgGY2ydMbbGGFtljK0wxpYZY0uMsUXG2AJjbJ4xNscYm2WMzTDGphljk4yxCcbYOGNsjDE2yhgbYYwNM8aGGGODjLEBxlg/Y6yPMdbLGOthjHUzxroYY52MsQ7GWDtjrI0x1soYa2GMNTPGmhhjjYyxBsZYHWOsjjFWyxirYYxVM8aqGGOVjLEKxlg5Y6yMMVbKGCthjBUzxooYY4WMsQLGWD5jLI8xlssYy2GMZTPGshhjGYyxNMZYKmMshTGWzBhLYowlMsaSGGPxjLF4xlgcYyyWMRbDGItmjEUxxiIZYxGMsXDGWBhjLJQxFsIYC2aMBTHGAhljAYwxf8aYH2PMlzHmwxgDAPwCQqQZQZQqgFQAAAAASUVORK5CYII=">
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGASURBVFhH7ZY9TsNAEIXfzK4dK0oKJCQKJIoU/AE/QUVJwQ9QUVHwA1RUFBQU/AEVBQUFQqKgQEKioEBCQkJCQrG9O7M0a8d2bMf2JhQc6UjrzLx5b2Z2bQcGBgYGBv4zQohxIcQcY2yWMTbFGBtnjI0xxkYYY8OMsSHG2CBjrJ8x1scY62WM9TDGuhljXYyxTsZYB2OsnTHWxhh7Y4y9MsZeGGPPjLEnxtgjY+yBMXbPGLtjjN0yxm4YY9eMsSvG2CVj7IIxds4YO2OMnTLGThhjx4yxI8bYIWPsgDG2zxjbY4ztMsa2GWNbjLFNxtgGY2ydMbbGGFtljK0wxpYZY0uMsUXG2AJjbJ4xNscYm2WMzTDGphljk4yxCcbYOGNsjDE2yhgbYYwNM8aGGGODjLEBxlg/Y6yPMdbLGOthjHUzxroYY52MsQ7GWDtjrI0x1soYa2GMNTPGmhhjjYyxBsZYHWOsjjFWyxirYYxVM8aqGGOVjLEKxlg5Y6yMMVbKGCthjBUzxooYY4WMsQLGWD5jLI8xlssYy2GMZTPGshhjGYyxNMZYKmMshTGWzBhLYowlMsaSGGPxjLF4xlgcYyyWMRbDGItmjEUxxiIZYxGMsXDGWBhjLJQxFsIYC2aMBTHGAhljAYwxf8aYH2PMlzHmwxgDAPwCQqQZQZQqgFQAAAAASUVORK5CYII=">
+  
+  <!-- PWA için manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="MelodyStream">
+  <meta name="apple-mobile-web-app-title" content="MelodyStream">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <!-- Mevcut meta etiketleri devam ediyor -->
+  <meta name="description" content="MelodyStream, YouTube API ile reklamsız ve ücretsiz müzik dinleme imkanı sunan bir uygulamadır. Ticari amaç gütmez; şarkıların telif haklarına saygı göstererek keyifli bir müzik deneyimi sunar.">
+  <meta name="keywords" content="MelodyStream, Erkan turgut, ücretsiz müzik, reklamsız müzik, YouTube müzik, müzik dinleme, online müzik, telif hakları">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Erkan Turgut">
+  <meta property="og:title" content="MelodyStream - Ücretsiz ve Reklamsız Müzik Dinleme">
+  <meta property="og:description" content="MelodyStream ile YouTube üzerinden reklamsız ve ücretsiz müzik dinleyin. Ticari olmayan bu uygulama, telif haklarına saygı duyar.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.linkedin.com/in/erkanturgut1205">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MelodyStream - Ücretsiz ve Reklamsız Müzik Dinleme">
+  <meta name="twitter:description" content="MelodyStream ile YouTube üzerinden reklamsız ve ücretsiz müzik dinleyin. Ticari olmayan bu uygulama, telif haklarına saygı duyar.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link href="https://fonts.cdnfonts.com/css/circular-std" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+
+    :root {
+      --spotify-green: #1ed760;
+      --spotify-black: #121212;
+      --spotify-dark-gray: #212121;
+      --spotify-gray: #535353;
+      --spotify-light-gray: #b3b3b3;
+      --spotify-white: #ffffff;
+      --main-radius: 8px;
+      --hover-brightness: 1.15;
+    }
+
+    body {
+      font-family: 'Circular Std', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--spotify-black);
+      color: var(--spotify-white);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+
+    .app-wrapper {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 2002;
+      width: 40px;
+      height: 40px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      background: linear-gradient(159deg, rgba(34, 139, 34, 1) 0%, rgba(50, 205, 50, 1) 100%);
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      tap-highlight-color: transparent;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: var(--spotify-white);
+      margin: 3px 0;
+      border-radius: 1px;
+    }
+
+    .hamburger.active span:nth-child(1) {
+      transform: translateY(5px) rotate(45deg);
+    }
+
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.active span:nth-child(3) {
+      transform: translateY(-5px) rotate(-45deg);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      align-items: normal;
+      width: 240px;
+      background: var(--spotify-black);
+      padding: 24px 16px;
+      position: fixed;
+      top: 0;
+      bottom: 0; /* 90px yerine 0 yap */
+      z-index: 2001;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      height: 100vh; /* Eklendi */
+      padding-bottom: 160px; /* Player bar yüksekliği kadar boşluk bırak */
+    }
+
+    .sidebar h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--spotify-white);
+      margin-top: 35px;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 24px 16px 120px;
+      margin-left: 240px;
+      min-width: 0;
+      transition: margin-left 0.3s ease;
+      padding-bottom: 110px; /* Player bar yüksekliği kadar boşluk bırak */
+    }
+
+    .song-detail {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 3000;
+      padding: 0;
+      overflow: hidden;
+      color: var(--spotify-white);
+      animation: fadeIn 0.5s ease-in-out;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .song-detail.active {
+      display: flex;
+    }
+
+    .song-detail::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 1;
+      background: var(--spotify-black);
+      opacity: 0.85;
+      background-image: var(--song-bg-image, none);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(18px) saturate(1.2);
+      pointer-events: none;
+    }
+
+    .song-detail .song-content {
+      position: relative;
+      z-index: 2;
+      width: 95vw;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(24,24,24,0.82);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      margin: 56px auto 0 auto;
+      padding: 32px 16px 24px 16px;
+      backdrop-filter: blur(2px);
+    }
+
+    .song-detail .back-btn {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: var(--spotify-white);
+      font-size: 28px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: background 0.2s, transform 0.2s;
+      z-index: 10;
+    }
+
+    .song-detail .back-btn:hover {
+      background: var(--spotify-green);
+      color: var(--spotify-black);
+      transform: scale(1.1);
+    }
+
+    .song-detail .album-art {
+      width: 80vw;
+      max-width: 320px;
+      aspect-ratio: 1;
+      margin: 0 auto 32px auto;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 1.5px 8px rgba(30,215,96,0.08);
+      object-fit: cover;
+      background: #222;
+      border: none;
+    }
+
+    .song-detail .song-info {
+      text-align: center;
+      margin-bottom: 32px;
+      width: 100%;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .song-detail .song-info h3 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--spotify-white);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      letter-spacing: 0.5px;
+    }
+
+    .song-detail .song-info p {
+      font-size: 1.1rem;
+      color: var(--spotify-green);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .song-detail .source {
+      font-size: 0.95rem;
+      color: var(--spotify-light-gray);
+      margin-bottom: 12px;
+    }
+
+    .song-detail .favorite-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: var(--spotify-light-gray);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      transition: color 0.2s, background 0.2s, transform 0.2s;
+    }
+
+    .song-detail .favorite-btn:hover,
+    .song-detail .favorite-btn.active {
+      color: var(--spotify-green);
+      background: rgba(0,0,0,0.8);
+      transform: scale(1.1);
+    }
+
+    .song-detail .player-bar {
+      width: 100vw;
+      left: 0;
+      right: 0;
+      margin: 0;
+      border-radius: 0;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .song-detail .player-bar .progress {
+      width: 100vw;
+      max-width: 100vw;
+      margin: 0 auto 4px auto;
+      padding: 0 24px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+    }
+    .song-detail .player-bar .progress time {
+      font-size: 13px;
+      color: var(--spotify-light-gray);
+      min-width: 36px;
+    }
+    .song-detail .player-bar .slider {
+      width: 100%;
+      max-width: none;
+      margin: 0 8px;
+    }
+    .song-detail .player-bar .player-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 0;
+    }
+    .song-detail .player-bar .player-controls button {
+      background: none;
+      border: none;
+      color: var(--spotify-white);
+      font-size: 1.45rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.18s, background 0.18s;
+    }
+    .song-detail .player-bar .player-controls button:hover, .player-bar .player-controls button.active,
+    .player-bar .player-controls button:hover, .player-bar .player-controls button.active {
+      color: var(--spotify-green);
+      background: rgba(30,215,96,0.08);
+      transform: scale(1.08);
+    }
+    @media (max-width: 600px) {
+      .song-detail .player-bar {
+        min-height: 56px;
+        padding: 6px 2px 2px 2px;
+        border-radius: 12px 12px 0 0;
+      }
+      .song-detail .player-bar .player-controls, .player-bar .player-controls {
+        gap: 10px;
+      }
+      .song-detail .player-bar .player-controls button, .player-bar .player-controls button {
+        font-size: 1.1rem;
+        padding: 6px;
+      }
+      .song-detail .player-bar .progress, .player-bar .progress {
+        margin-bottom: 2px;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .section {
+      background: var(--spotify-dark-gray);
+      border-radius: var(--main-radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--spotify-white);
+    }
+
+    .music-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+
+    .music-card {
+      background: var(--spotify-dark-gray);
+      border-radius: var(--main-radius);
+      padding: 12px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .music-card:hover {
+      background: #2a2a2a;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .music-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      object-fit: cover;
+    }
+
+    .music-card h3 {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .music-card p {
+      font-size: 12px;
+      color: var(--spotify-light-gray);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .favorite-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: none;
+      border: none;
+      color: var(--spotify-light-gray);
+      font-size: 16px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, color 0.2s;
+    }
+
+    .music-card:hover .favorite-btn {
+      opacity: 1;
+    }
+
+    .favorite-btn.active {
+      color: var(--spotify-green);
+    }
+
+    .search-bar {
+      background: #2a2a2a;
+      border: none;
+      border-radius: 500px;
+      padding: 12px 20px;
+      color: var(--spotify-white);
+      width: 100%;
+      margin-bottom: 20px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .search-bar::placeholder {
+      color: var(--spotify-light-gray);
+    }
+
+    .search-bar:focus {
+      outline: none;
+      background: #333;
+      box-shadow: 0 0 0 2px var(--spotify-green);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      color: var(--spotify-light-gray);
+      text-decoration: none;
+      border-radius: 4px;
+      margin: 4px 0;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-item:hover {
+      background: #2a2a2a;
+      color: var(--spotify-white);
+    }
+
+    .nav-item.active {
+      background: var(--spotify-gray);
+      color: var(--spotify-white);
+    }
+
+    .nav-item i {
+      font-size: 18px;
+    }
+
+    .playlist-section {
+      margin-top: 20px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .playlist-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--spotify-light-gray);
+      margin-bottom: 8px;
+    }
+
+    .playlist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      color: var(--spotify-light-gray);
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .playlist-item:hover {
+      background: #2a2a2a;
+      color: var(--spotify-white);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 24px;
+      font-size: 12px;
+      color: var(--spotify-light-gray);
+      line-height: 1.5;
+    }
+
+    .sidebar-footer p {
+      margin-bottom: 12px;
+    }
+
+    .sidebar-footer .developer {
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-footer .contact-links {
+      display: flex;
+      gap: 12px;
+    }
+
+    .sidebar-footer .contact-links a {
+      color: var(--spotify-green);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .sidebar-footer .contact-links a:hover {
+      text-decoration: underline;
+    }
+
+    .player-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      max-width: 100vw;
+      margin: 0;
+      z-index: 3002;
+      border-radius: 18px 18px 0 0;
+      box-shadow: 0 -2px 24px rgba(0,0,0,0.25);
+      background: linear-gradient(90deg, #181818 0%, #282828 100%);
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Masaüstünde de player-bar uçtan uca olsun */
+    @media (min-width: 700px) {
+      .player-bar {
+        left: 0;
+        right: 0;
+        width: 100vw;
+        max-width: 100vw;
+        margin: 0;
+        border-radius: 18px 18px 0 0;
+      }
+    }
+
+    .player-bar .now-playing {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+      max-width: 30%;
+    }
+
+    .player-bar .player-album-art {
+      width: 56px;
+      height: 56px;
+      border-radius: 4px;
+      object-fit: cover;
+      background: #222;
+    }
+
+    .player-bar .player-song-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .player-bar .player-song-title {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-bar .player-song-artist {
+      font-size: 12px;
+      color: var(--spotify-light-gray);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-bar .add-to-playlist-btn {
+      background: none;
+      border: none;
+      color: var(--spotify-white);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 8px;
+      opacity: 0.7;
+    }
+
+    .player-bar .add-to-playlist-btn:hover {
+      opacity: 1;
+      color: var(--spotify-green);
+    }
+
+    .player-bar .player-center {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .player-bar .slider {
+      width: 100%;
+      max-width: 900px;
+      height: 4px;
+      border-radius: 2px;
+      background: #5e5e5e;
+      accent-color: var(--spotify-green);
+      cursor: pointer;
+      margin: 0 auto;
+    }
+
+    .player-bar .player-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .player-bar .player-controls button {
+      background: none;
+      border: none;
+      color: var(--spotify-white);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .player-bar .player-controls button:hover {
+      color: var(--spotify-green);
+      transform: scale(1.1);
+    }
+
+    .player-bar .player-controls button.active {
+      color: var(--spotify-green);
+    }
+
+    .player-bar .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 20%;
+      justify-content: flex-end;
+    }
+
+    .player-bar .volume-control i {
+      font-size: 16px;
+    }
+
+    .player-bar .volume-control input[type=range] {
+      width: 80px;
+      height: 4px;
+      background: #5e5e5e;
+      accent-color: var(--spotify-green);
+      cursor: pointer;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+      overflow: auto;
+      display: block;
+      opacity: 1;
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+        bottom: 0;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 16px 12px 100px;
+        padding-left: 64px;
+      }
+
+      .search-bar {
+        padding-left: 16px;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .music-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+      }
+
+      .player-bar {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        height: 150px;
+        min-height: 90px;
+        padding: 6px;
+        gap: 2px;
+      }
+
+      .player-bar .player-center {
+        max-width: 55%;
+      }
+
+      .player-bar .now-playing {
+        max-width: 35%;
+      }
+
+      .player-bar .volume-control {
+        max-width: 25%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .music-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+      }
+
+      .player-bar {
+        height: auto;
+        min-height: 120px;
+        padding: 12px;
+        flex-direction: column;
+      }
+
+      .player-bar .now-playing {
+        max-width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .player-bar .player-center {
+        max-width: 100%;
+        order: -1;
+        margin-bottom: 8px;
+      }
+
+      .player-bar .volume-control {
+        max-width: 100%;
+        justify-content: center;
+        margin-top: 8px;
+      }
+
+      .song-detail {
+        padding: 16px;
+      }
+
+      .song-detail .album-art {
+        max-width: 250px;
+        margin: 24px auto 16px;
+      }
+
+      .song-detail .song-info h3 {
+        font-size: 24px;
+      }
+
+      .song-detail .player-bar {
+        padding: 12px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0;
+      }
+
+      .sidebar {
+        overflow: auto;
+        width: 100%;
+        max-width: 300px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.open {
+        overflow: auto;
+        transform: translateX(0);
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .search-bar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        margin: 0;
+        padding: 12px;
+        background: var(--spotify-black);
+      }
+
+      .playlist-item {
+        padding: 12px;
+      }
+
+      .modal > div {
+        width: 90%;
+        max-width: 320px;
+        margin: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .music-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 8px;
+      }
+
+      .section {
+        padding: 12px;
+      }
+
+      .section h2 {
+        font-size: 18px;
+      }
+
+      .player-bar {
+        min-height: 100px;
+      }
+
+      .player-bar .player-album-art {
+        width: 40px;
+        height: 40px;
+      }
+
+      .player-bar .player-song-title {
+        font-size: 13px;
+      }
+
+      .player-bar .player-song-artist {
+        font-size: 11px;
+      }
+
+      .song-detail .album-art {
+        max-width: 200px;
+      }
+
+      .song-detail .song-info h3 {
+        font-size: 20px;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .song-detail.active {
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .music-card {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .player-bar .slider {
+      touch-action: pan-x;
+    }
+
+    .loading-spinner {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--spotify-gray);
+      border-top-color: var(--spotify-green);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .error-message {
+      display: none;
+      background: rgba(255, 0, 0, 0.1);
+      color: #ff4444;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 12px 0;
+      text-align: center;
+    }
+
+    /* Popüler playlist grid'i için stil */
+    .popular-playlists-section {
+      background: var(--spotify-dark-gray);
+      border-radius: var(--main-radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .popular-playlists-section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--spotify-white);
+    }
+    .popular-playlists-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .popular-playlist-card {
+      background: var(--spotify-dark-gray);
+      border-radius: var(--main-radius);
+      padding: 12px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .popular-playlist-card:hover {
+      background: #2a2a2a;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    }
+    .popular-playlist-card img {
+      width: 100%;
+      max-width: 120px;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      object-fit: cover;
+    }
+    .popular-playlist-card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--spotify-white);
+      text-align: center;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .popular-playlist-card p {
+      font-size: 12px;
+      color: var(--spotify-light-gray);
+      text-align: center;
+    }
+    @media (max-width: 600px) {
+      .popular-playlists-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+      }
+      .popular-playlist-card img {
+        max-width: 90px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="hamburger" id="hamburgerMenu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <div class="app-wrapper">
+    <div class="sidebar" id="sidebar">
+      <h2>MelodyStream</h2>
+      <nav>
+        <a href="#" class="nav-item active" aria-label="Ana Sayfa">
+          <i class="fas fa-home"></i>
+          Ana Sayfa
+        </a>
+        <a href="#" class="nav-item" aria-label="Ara">
+          <i class="fas fa-search"></i>
+          Ara
+        </a>
+        <a href="#" class="nav-item" aria-label="Favoriler">
+          <i class="fas fa-heart"></i>
+          Favoriler
+        </a>
+      </nav>
+      <div class="playlist-section">
+        <h3>Çalma Listeleri</h3>
+        <div class="playlist-item" aria-label="Çalma Listesi Oluştur">
+          <i class="fas fa-plus"></i>
+          Çalma Listesi Oluştur
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <p>Bu uygulama, YouTube API kullanarak müzik dinlemenizi sağlar. Herhangi bir ticari amacı yoktur. <br>
+          Şarkıların telif haklarına saygı gösterin ve
+          yalnızca izin verilen içerikleri dinleyin.</p>
+        <div class="developer">Geliştirici: Erkan Turgut</div>
+        <div class="contact-links">
+          <a href="mailto:turguterkan1306@gmail.com" aria-label="E-posta">Mail</a>
+          <a href="https://www.linkedin.com/in/erkanturgut1205" target="_blank" aria-label="LinkedIn">LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <input type="text" class="search-bar" placeholder="Şarkı veya sanatçı ara..." aria-label="Ara">
+      <div class="section">
+        <h2>Önerilenler</h2>
+        <div class="music-grid" id="recommendedMusic"></div>
+      </div>
+      <div class="section">
+        <h2>Senin Favorilerin</h2>
+        <div class="music-grid" id="favoriteMusic"></div>
+      </div>
+    </div>
+    <div class="song-detail" id="songDetail">
+      <button class="back-btn" aria-label="Geri"><i class="fas fa-arrow-left"></i></button>
+      <div class="song-content">
+        <img src="" alt="Albüm Kapağı" class="album-art" id="detailThumbnail">
+        <div class="song-info">
+          <h3 id="detailSongName"></h3>
+          <p id="detailArtist"></p>
+          <div class="source" id="detailSource"></div>
+          <button class="favorite-btn" id="detailFavoriteBtn" aria-label="Favoriye ekle/çıkar">
+            <i class="fas fa-heart"></i>
+          </button>
+        </div>
+      </div>
+      <div class="player-bar">
+        <div class="progress">
+          <time id="currentTime">0:00</time>
+          <input type="range" id="detailProgressSlider" class="slider" min="0" max="100" value="0"
+            aria-label="İlerleme">
+          <time id="duration">0:00</time>
+        </div>
+        <div class="player-controls">
+          <button onclick="shufflePlaylist()" aria-label="Karıştır"><i class="fas fa-random"></i></button>
+          <button onclick="playPrevious()" aria-label="Önceki"><i class="fas fa-step-backward"></i></button>
+          <button onclick="togglePlayPause()" id="detailPlayPauseButton" aria-label="Oynat/Duraklat"><i
+              class="fas fa-play"></i></button>
+          <button onclick="playNext()" aria-label="Sonraki"><i class="fas fa-step-forward"></i></button>
+          <button onclick="toggleRepeat()" aria-label="Tekrar"><i class="fas fa-redo"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="player-bar" id="playerBar">
+    <div class="now-playing">
+      <img id="currentThumbnail" src="" alt="Albüm Kapağı" class="player-album-art">
+      <div class="player-song-info">
+        <div id="currentSongName" class="player-song-title">Şarkı seçilmedi</div>
+        <div id="currentArtist" class="player-song-artist">Sanatçı</div>
+      </div>
+      <button id="addToPlaylistBtn" class="add-to-playlist-btn" title="Çalma Listesine Ekle" style="display:none;">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+    <div class="player-center">
+      <input type="range" id="progressSlider" class="slider" min="0" max="100" value="0" aria-label="İlerleme">
+      <div class="player-controls">
+        <button onclick="shufflePlaylist()" aria-label="Karıştır"><i class="fas fa-random"></i></button>
+        <button onclick="playPrevious()" aria-label="Önceki"><i class="fas fa-step-backward"></i></button>
+        <button onclick="togglePlayPause()" id="playPauseButton" aria-label="Oynat/Duraklat"><i
+            class="fas fa-play"></i></button>
+        <button onclick="playNext()" aria-label="Sonraki"><i class="fas fa-step-forward"></i></button>
+        <button onclick="toggleRepeat()" aria-label="Tekrar"><i class="fas fa-redo"></i></button>
+      </div>
+    </div>
+    <div class="volume-control">
+      <i class="fas fa-volume-up" aria-hidden="true"></i>
+      <input type="range" id="volumeSlider" min="0" max="100" value="100" aria-label="Ses">
+    </div>
+  </div>
+  <script>
+    const YOUTUBE_API_KEY = 'add-your-youtube-api-key';
+    let localSongs = [];
+    let youtubeResults = [];
+    let currentSong = null;
+    let audio = null;
+    let youtubePlayer = null;
+    let isPlaying = false;
+    let isYouTubeApiReady = false;
+    let playerReady = false;
+    let progressInterval = null;
+    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    let recommendedMusic = [];
+    let isShuffleOn = false;
+    let isRepeatOn = false;
+    let playlists = JSON.parse(localStorage.getItem('playlists')) || [];
+    let currentView = 'home';
+    let currentSongList = [];
+
+    function savePlaylists() {
+      localStorage.setItem('playlists', JSON.stringify(playlists));
+    }
+
+    function renderPlaylistsSidebar() {
+      const section = document.querySelector('.playlist-section');
+      section.innerHTML = `<h3>Çalma Listeleri</h3>`;
+      playlists.forEach((pl, idx) => {
+        const div = document.createElement('div');
+        div.className = 'playlist-item';
+        div.textContent = pl.name;
+        div.setAttribute('aria-label', `Çalma Listesi ${pl.name}`);
+        div.onclick = () => showPlaylistSongs(idx);
+        section.appendChild(div);
+      });
+      const newBtn = document.createElement('div');
+      newBtn.className = 'playlist-item';
+      newBtn.innerHTML = '<i class="fas fa-plus"></i> Çalma Listesi Oluştur';
+      newBtn.setAttribute('aria-label', 'Çalma Listesi Oluştur');
+      newBtn.onclick = openCreatePlaylistModal;
+      section.appendChild(newBtn);
+    }
+
+    function openCreatePlaylistModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100vw';
+      modal.style.height = '100vh';
+      modal.style.background = 'rgba(0,0,0,0.7)';
+      modal.style.display = 'flex';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
+      modal.style.zIndex = '3000';
+      modal.innerHTML = `
+        <div style="background:#282828;padding:24px;border-radius:8px;min-width:300px;max-width:90%;">
+          <h3 style="font-size:18px;margin-bottom:16px;">Çalma Listesi Oluştur</h3>
+          <input id="playlistName" type="text" placeholder="Çalma listesi adı" style="width:100%;padding:10px;margin-bottom:16px;border:none;background:#333;color:#fff;border-radius:4px;" aria-label="Çalma listesi adı">
+          <div style="display:flex;gap:12px;">
+            <button id="createPlaylistBtn" style="flex:1;padding:10px;background:#1ed760;color:#000;border-radius:500px;border:none;font-weight:500;">Oluştur</button>
+            <button id="closeModalBtn" style="flex:1;padding:10px;background:#333;color:#fff;border-radius:500px;border:none;font-weight:500;">İptal</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const input = document.getElementById('playlistName');
+      input.focus();
+      document.getElementById('closeModalBtn').onclick = () => modal.remove();
+      document.getElementById('createPlaylistBtn').onclick = () => {
+        const name = input.value.trim();
+        if (name) {
+          playlists.push({ name, songs: [] });
+          savePlaylists();
+          renderPlaylistsSidebar();
+          modal.remove();
+        }
+      };
+    }
+
+    function showPlaylistSongs(idx) {
+      const pl = playlists[idx];
+      const mainContent = document.querySelector('.main-content');
+      mainContent.innerHTML = `
+        <div class="section">
+          <h2>${pl.name}</h2>
+          <div class="music-grid" id="playlistSongs"></div>
+        </div>
+      `;
+      const grid = document.getElementById('playlistSongs');
+      if (pl.songs.length === 0) {
+        grid.innerHTML = '<p style="color:#b3b3b3">Bu çalma listesinde şarkı yok.</p>';
+      } else {
+        pl.songs.forEach(song => {
+          const card = createMusicCard(song);
+          grid.appendChild(card);
+        });
+      }
+      currentView = 'playlist';
+      currentSongList = pl.songs;
+    }
+
+    window.onYouTubeIframeAPIReady = () => {
+      isYouTubeApiReady = true;
+      loadRecommendedMusic();
+    };
+
+    async function loadRecommendedMusic() {
+      try {
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&videoCategoryId=10&key=${YOUTUBE_API_KEY}&maxResults=10`
+        );
+        if (!response.ok) throw new Error('Önerilen müzikler yüklenemedi');
+        const data = await response.json();
+        recommendedMusic = data.items.map(item => ({
+          videoId: item.id,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.high.url,
+          channelTitle: item.snippet.channelTitle,
+          type: 'youtube'
+        }));
+        updateRecommendedMusicGrid();
+      } catch (error) {
+        console.error('Önerilen müzikler yüklenirken hata:', error);
+        alert('Önerilen müzikler yüklenirken bir hata oluştu. Lütfen tekrar deneyin.');
+      }
+    }
+
+    function updateRecommendedMusicGrid() {
+      const grid = document.getElementById('recommendedMusic');
+      grid.innerHTML = '';
+      recommendedMusic.forEach(song => {
+        const card = createMusicCard(song);
+        grid.appendChild(card);
+      });
+      if (currentView === 'home') {
+        currentSongList = [...recommendedMusic, ...favorites];
+      }
+    }
+
+    function updateFavoritesGrid() {
+      const grid = document.getElementById('favoriteMusic');
+      grid.innerHTML = '';
+      if (favorites.length === 0) {
+        grid.innerHTML = '<p style="color:#b3b3b3">Henüz favori şarkın yok.</p>';
+      } else {
+        favorites.forEach(song => {
+          const card = createMusicCard(song);
+          grid.appendChild(card);
+        });
+      }
+      if (currentView === 'favorites') {
+        currentSongList = favorites;
+      }
+    }
+
+    function createMusicCard(song) {
+      const card = document.createElement('div');
+      card.className = 'music-card';
+      card.setAttribute('aria-label', `${song.title} çal`);
+      card.innerHTML = `
+        <img src="${song.thumbnail}" alt="${song.title}">
+        <h3>${song.title}</h3>
+        <p>${song.channelTitle || 'Bilinmeyen Sanatçı'}</p>
+        <button class="favorite-btn ${favorites.some(f => f.videoId === song.videoId) ? 'active' : ''}" 
+                aria-label="Favoriye ekle/çıkar">
+          <i class="fas fa-heart"></i>
+        </button>
+      `;
+      card.querySelector('.favorite-btn').onclick = (e) => {
+        e.stopPropagation();
+        toggleFavorite(song);
+      };
+      card.onclick = () => showSongDetail(song);
+      return card;
+    }
+
+    function toggleFavorite(song) {
+      const index = favorites.findIndex(f => f.videoId === song.videoId);
+      if (index === -1) {
+        favorites.push(song);
+      } else {
+        favorites.splice(index, 1);
+      }
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+      updateFavoritesGrid();
+      updateRecommendedMusicGrid();
+      if (currentSong && currentSong.videoId === song.videoId) {
+        const detailFavBtn = document.getElementById('detailFavoriteBtn');
+        detailFavBtn.classList.toggle('active', favorites.some(f => f.videoId === song.videoId));
+      }
+    }
+
+    async function playSong(song) {
+      if (!isYouTubeApiReady) {
+        alert('YouTube API henüz hazır değil. Lütfen bekleyin.');
+        return;
+      }
+      if (youtubePlayer) {
+        youtubePlayer.stopVideo();
+      }
+      if (audio) {
+        audio.pause();
+        audio = null;
+      }
+      currentSong = song;
+      document.getElementById('currentSongName').textContent = song.title;
+      document.getElementById('currentArtist').textContent = song.channelTitle || 'Bilinmeyen Sanatçı';
+      document.getElementById('currentThumbnail').src = song.thumbnail;
+      document.getElementById('detailSongName').textContent = song.title;
+      document.getElementById('detailArtist').textContent = song.channelTitle || 'Bilinmeyen Sanatçı';
+      document.getElementById('detailThumbnail').src = song.thumbnail;
+      document.getElementById('detailSource').textContent = 'Bang Müzik';
+      const detailFavBtn = document.getElementById('detailFavoriteBtn');
+      detailFavBtn.classList.toggle('active', favorites.some(f => f.videoId === song.videoId));
+      detailFavBtn.onclick = (e) => {
+        e.stopPropagation();
+        toggleFavorite(song);
+      };
+      const songDetail = document.getElementById('songDetail');
+      songDetail.style.backgroundImage = `url(${song.thumbnail})`;
+      if (!youtubePlayer) {
+        const playerContainer = document.createElement('div');
+        playerContainer.id = 'youtube-player';
+        playerContainer.style.display = 'none';
+        document.body.appendChild(playerContainer);
+        youtubePlayer = new YT.Player('youtube-player', {
+          height: '0',
+          width: '0',
+          videoId: song.videoId,
+          playerVars: {
+            controls: 0,
+            autoplay: 1,
+            modestbranding: 1,
+            rel: 0,
+            fs: 0
+          },
+          events: {
+            onReady: (event) => {
+              playerReady = true;
+              event.target.playVideo();
+              isPlaying = true;
+              updatePlayPauseButton();
+              updateDetailPlayPauseButton();
+              progressInterval = setInterval(updateProgress, 500);
+            },
+            onStateChange: (event) => {
+              if (event.data === YT.PlayerState.ENDED) {
+                if (isRepeatOn) {
+                  event.target.playVideo();
+                } else {
+                  playNext();
+                }
+              } else if (event.data === YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                updatePlayPauseButton();
+                updateDetailPlayPauseButton();
+                updateProgress();
+              } else if (event.data === YT.PlayerState.PAUSED) {
+                isPlaying = false;
+                updatePlayPauseButton();
+                updateDetailPlayPauseButton();
+              }
+            },
+            onError: (event) => {
+              console.error('YouTube Oynatıcı Hatası:', event.data);
+              alert('Video oynatılırken hata oluştu. Lütfen başka bir şarkı deneyin.');
+            }
+          }
+        });
+      } else {
+        youtubePlayer.loadVideoById(song.videoId);
+      }
+      setTimeout(updateAddToPlaylistBtn, 200);
+    }
+
+    function togglePlayPause() {
+      if (!youtubePlayer || !playerReady) {
+        alert('Oynatıcı henüz hazır değil. Lütfen bekleyin.');
+        return;
+      }
+      const state = youtubePlayer.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
+        youtubePlayer.pauseVideo();
+        isPlaying = false;
+      } else {
+        youtubePlayer.playVideo();
+        isPlaying = true;
+      }
+      updatePlayPauseButton();
+      updateDetailPlayPauseButton();
+    }
+
+    function updatePlayPauseButton() {
+      const button = document.getElementById('playPauseButton');
+      button.innerHTML = `<i class="fas fa-${isPlaying ? 'pause' : 'play'}"></i>`;
+      button.setAttribute('aria-label', isPlaying ? 'Duraklat' : 'Oynat');
+    }
+
+    function updateDetailPlayPauseButton() {
+      const button = document.getElementById('detailPlayPauseButton');
+      button.innerHTML = `<i class="fas fa-${isPlaying ? 'pause' : 'play'}"></i>`;
+      button.classList.toggle('playing', isPlaying);
+      button.setAttribute('aria-label', isPlaying ? 'Duraklat' : 'Oynat');
+    }
+
+    function playNext() {
+      if (!currentSong || !currentSongList.length) return;
+      let nextSong;
+      if (isShuffleOn) {
+        nextSong = currentSongList[Math.floor(Math.random() * currentSongList.length)];
+      } else {
+        const currentIndex = currentSongList.findIndex(s => s.videoId === currentSong.videoId);
+        nextSong = currentSongList[(currentIndex + 1) % currentSongList.length] || currentSongList[0];
+      }
+      if (nextSong) {
+        showSongDetail(nextSong);
+      }
+    }
+
+    function playPrevious() {
+      if (!currentSong || !currentSongList.length) return;
+      let prevSong;
+      if (isShuffleOn) {
+        prevSong = currentSongList[Math.floor(Math.random() * currentSongList.length)];
+      } else {
+        const currentIndex = currentSongList.findIndex(s => s.videoId === currentSong.videoId);
+        prevSong = currentSongList[(currentIndex - 1 + currentSongList.length) % currentSongList.length] || currentSongList[currentSongList.length - 1];
+      }
+      if (prevSong) {
+        showSongDetail(prevSong);
+      }
+    }
+
+    function shufflePlaylist() {
+      isShuffleOn = !isShuffleOn;
+      const button = document.querySelector('.player-controls button:first-child');
+      button.classList.toggle('active', isShuffleOn);
+    }
+
+    function toggleRepeat() {
+      isRepeatOn = !isRepeatOn;
+      const button = document.querySelector('.player-controls button:last-child');
+      button.classList.toggle('active', isRepeatOn);
+    }
+
+    function updateProgress() {
+      if (!youtubePlayer || !playerReady) return;
+      const currentTime = youtubePlayer.getCurrentTime();
+      const duration = youtubePlayer.getDuration();
+      if (duration > 0) {
+        const progress = (currentTime / duration) * 100;
+        document.getElementById('progressSlider').value = progress;
+        document.getElementById('detailProgressSlider').value = progress;
+        document.getElementById('currentTime').textContent = formatTime(currentTime);
+        document.getElementById('duration').textContent = formatTime(duration);
+      }
+    }
+
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    document.getElementById('progressSlider').addEventListener('input', (e) => {
+      if (!youtubePlayer || !playerReady) return;
+      const duration = youtubePlayer.getDuration();
+      const seekTo = (e.target.value / 100) * duration;
+      youtubePlayer.seekTo(seekTo, true);
+    });
+
+    document.getElementById('detailProgressSlider').addEventListener('input', (e) => {
+      if (!youtubePlayer || !playerReady) return;
+      const duration = youtubePlayer.getDuration();
+      const seekTo = (e.target.value / 100) * duration;
+      youtubePlayer.seekTo(seekTo, true);
+    });
+
+    document.getElementById('volumeSlider').addEventListener('input', (e) => {
+      if (youtubePlayer && playerReady) {
+        youtubePlayer.setVolume(e.target.value);
+      }
+    });
+
+    let lastSearchResults = [];
+    document.querySelector('.search-bar').addEventListener('input', debounce(async (e) => {
+      const query = e.target.value.trim();
+      const grid = document.getElementById('recommendedMusic');
+      if (!query) {
+        updateRecommendedMusicGrid();
+        return;
+      }
+      try {
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&key=${YOUTUBE_API_KEY}&maxResults=10`
+        );
+        if (!response.ok) throw new Error('Arama başarısız');
+        const data = await response.json();
+        lastSearchResults = data.items
+          .filter(item => item.id.videoId)
+          .map(item => ({
+            videoId: item.id.videoId,
+            title: item.snippet.title,
+            thumbnail: item.snippet.thumbnails.high.url,
+            channelTitle: item.snippet.channelTitle,
+            type: 'youtube'
+          }));
+        grid.innerHTML = '';
+        if (lastSearchResults.length === 0) {
+          grid.innerHTML = '<p style="color:#b3b3b3">Sonuç bulunamadı.</p>';
+        } else {
+          lastSearchResults.forEach(song => {
+            const card = createMusicCard(song);
+            grid.appendChild(card);
+          });
+        }
+        if (currentView === 'home') {
+          currentSongList = lastSearchResults;
+        }
+      } catch (error) {
+        console.error('Arama hatası:', error);
+        grid.innerHTML = '<p style="color:#b3b3b3">Arama yapılırken hata oluştu.</p>';
+      }
+    }, 500));
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    window.onload = () => {
+      updateFavoritesGrid();
+      renderPlaylistsSidebar();
+      updateAddToPlaylistBtn();
+    };
+
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+
+    const navItems = document.querySelectorAll('.nav-item');
+    const mainContent = document.querySelector('.main-content');
+    const songDetail = document.getElementById('songDetail');
+
+    function renderHomeSection() {
+      mainContent.innerHTML = `
+        <input type="text" class="search-bar" placeholder="Şarkı veya sanatçı ara..." aria-label="Ara">
+        <div class="section">
+          <h2>Önerilenler</h2>
+          <div class="music-grid" id="recommendedMusic"></div>
+        </div>
+        <div class="section">
+          <h2>Senin Favorilerin</h2>
+          <div class="music-grid" id="favoriteMusic"></div>
+        </div>
+      `;
+      updateRecommendedMusicGrid();
+      updateFavoritesGrid();
+      currentView = 'home';
+      currentSongList = [...recommendedMusic, ...favorites];
+      document.querySelector('.search-bar').addEventListener('input', debounce(async (e) => {
+        const query = e.target.value.trim();
+        const grid = document.getElementById('recommendedMusic');
+        if (!query) {
+          updateRecommendedMusicGrid();
+          return;
+        }
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&key=${YOUTUBE_API_KEY}&maxResults=10`
+          );
+          if (!response.ok) throw new Error('Arama başarısız');
+          const data = await response.json();
+          lastSearchResults = data.items
+            .filter(item => item.id.videoId)
+            .map(item => ({
+              videoId: item.id.videoId,
+              title: item.snippet.title,
+              thumbnail: item.snippet.thumbnails.high.url,
+              channelTitle: item.snippet.channelTitle,
+              type: 'youtube'
+            }));
+          grid.innerHTML = '';
+          if (lastSearchResults.length === 0) {
+            grid.innerHTML = '<p style="color:#b3b3b3">Sonuç bulunamadı.</p>';
+          } else {
+            lastSearchResults.forEach(song => {
+              const card = createMusicCard(song);
+              grid.appendChild(card);
+            });
+          }
+          currentSongList = lastSearchResults;
+        } catch (error) {
+          console.error('Arama hatası:', error);
+          grid.innerHTML = '<p style="color:#b3b3b3">Arama yapılırken hata oluştu.</p>';
+        }
+      }, 500));
+      // Popüler playlistleri yükle
+      loadPopularPlaylists();
+    }
+
+    function renderSearchSection() {
+      mainContent.innerHTML = `
+        <input type="text" class="search-bar" id="searchInput" placeholder="Şarkı veya sanatçı ara..." aria-label="Ara">
+        <div class="section">
+          <h2>Arama Sonuçları</h2>
+          <div class="music-grid" id="searchResults"></div>
+        </div>
+      `;
+      const searchInput = document.getElementById('searchInput');
+      searchInput.focus();
+      searchInput.addEventListener('input', debounce(async (e) => {
+        const query = e.target.value.trim();
+        const grid = document.getElementById('searchResults');
+        if (!query) {
+          grid.innerHTML = '';
+          currentSongList = [];
+          return;
+        }
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&key=${YOUTUBE_API_KEY}&maxResults=10`
+          );
+          if (!response.ok) throw new Error('Arama başarısız');
+          const data = await response.json();
+          lastSearchResults = data.items
+            .filter(item => item.id.videoId)
+            .map(item => ({
+              videoId: item.id.videoId,
+              title: item.snippet.title,
+              thumbnail: item.snippet.thumbnails.high.url,
+              channelTitle: item.snippet.channelTitle,
+              type: 'youtube',
+              addedAt: new Date().toISOString()
+            }));
+          grid.innerHTML = '';
+          if (lastSearchResults.length === 0) {
+            grid.innerHTML = '<p style="color:#b3b3b3">Sonuç bulunamadı.</p>';
+          } else {
+            lastSearchResults.forEach(song => {
+              const card = createMusicCard(song);
+              grid.appendChild(card);
+            });
+          }
+          currentSongList = lastSearchResults;
+        } catch (error) {
+          console.error('Arama hatası:', error);
+          grid.innerHTML = '<p style="color:#b3b3b3">Arama yapılırken hata oluştu.</p>';
+        }
+      }, 500));
+      currentView = 'search';
+      currentSongList = [];
+    }
+
+    function renderFavoritesSection() {
+      mainContent.innerHTML = `
+        <div class="section">
+          <h2>Senin Favorilerin</h2>
+          <div class="music-grid" id="favoriteMusic"></div>
+        </div>
+      `;
+      updateFavoritesGrid();
+      currentView = 'favorites';
+      currentSongList = favorites;
+    }
+
+    navItems.forEach((item, idx) => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        navItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        if (idx === 0) renderHomeSection();
+        else if (idx === 1) renderSearchSection();
+        else if (idx === 2) renderFavoritesSection();
+        if (window.innerWidth <= 1024) {
+          closeSidebar();
+        }
+      });
+    });
+
+    const addToPlaylistBtn = document.getElementById('addToPlaylistBtn');
+    function updateAddToPlaylistBtn() {
+      addToPlaylistBtn.style.display = currentSong ? '' : 'none';
+    }
+    addToPlaylistBtn.onclick = function () {
+      if (!currentSong) return;
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100vw';
+      modal.style.height = '100vh';
+      modal.style.background = 'rgba(0,0,0,0.7)';
+      modal.style.display = 'flex';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
+      modal.style.zIndex = '3000';
+      let listHtml = '';
+      if (playlists.length === 0) {
+        listHtml = '<p style="color:#b3b3b3">Hiç çalma listen yok.</p>';
+      } else {
+        listHtml = playlists.map((pl, idx) => `
+          <button style="display:block;width:100%;margin:8px 0;padding:12px;background:#333;color:#fff;border:none;border-radius:4px;font-weight:500;" onclick="window.addSongToPlaylist(${idx})">${pl.name}</button>
+        `).join('');
+      }
+      modal.innerHTML = `
+        <div style="background:#282828;padding:24px;border-radius:8px;min-width:300px;max-width:90%;">
+          <h3 style="font-size:18px;margin-bottom:16px;">Çalma Listesine Ekle</h3>
+          ${listHtml}
+          <button id="closeAddModalBtn" style="width:100%;padding:12px;background:#333;color:#fff;border-radius:500px;border:none;font-weight:500;margin-top:12px;">İptal</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      document.getElementById('closeAddModalBtn').onclick = () => modal.remove();
+      window.addSongToPlaylist = function (idx) {
+        if (!playlists[idx].songs.some(s => s.videoId === currentSong.videoId)) {
+          playlists[idx].songs.push(currentSong);
+          savePlaylists();
+          alert('Şarkı çalma listesine eklendi!');
+        } else {
+          alert('Bu şarkı zaten bu çalma listesinde!');
+        }
+        modal.remove();
+      };
+    };
+
+    const hamburger = document.getElementById('hamburgerMenu');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      sidebarOverlay.classList.add('active');
+      hamburger.classList.add('active');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('active');
+      hamburger.classList.remove('active');
+    }
+
+    hamburger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (sidebar.classList.contains('open')) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    });
+
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    sidebar.addEventListener('touchmove', (e) => {
+      if (window.innerWidth <= 1024) {
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1024) {
+        closeSidebar();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+        closeSidebar();
+      }
+    });
+
+    const playerBar = document.getElementById('playerBar');
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+    const minSwipeDistance = 50;
+
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    });
+
+    document.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].clientX;
+      touchEndY = e.changedTouches[0].clientY;
+      handleSwipe();
+    });
+
+    function handleSwipe() {
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+      
+      // Yatay kaydırma kontrolü
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+        if (deltaX > 0) {
+          // Sağa kaydırma - önceki şarkı
+          playPrevious();
+        } else {
+          // Sola kaydırma - sonraki şarkı
+          playNext();
+        }
+      }
+      
+      // Dikey kaydırma kontrolü
+      if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
+        if (deltaY > 0) {
+          // Aşağı kaydırma - şarkı detayını kapat
+          if (document.getElementById('songDetail').classList.contains('active')) {
+            goBack();
+          }
+        }
+      }
+    }
+
+    function showLoading() {
+      const spinner = document.createElement('div');
+      spinner.className = 'loading-spinner';
+      document.querySelector('.main-content').appendChild(spinner);
+      spinner.style.display = 'block';
+    }
+
+    function hideLoading() {
+      const spinner = document.querySelector('.loading-spinner');
+      if (spinner) {
+        spinner.remove();
+      }
+    }
+
+    function showError(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.textContent = message;
+      document.querySelector('.main-content').appendChild(errorDiv);
+      errorDiv.style.display = 'block';
+      setTimeout(() => errorDiv.remove(), 3000);
+    }
+
+    function createPlaylist(name) {
+      const playlist = {
+        id: Date.now().toString(),
+        name,
+        songs: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      playlists.push(playlist);
+      savePlaylists();
+      renderPlaylistsSidebar();
+      return playlist;
+    }
+
+    function deletePlaylist(playlistId) {
+      const index = playlists.findIndex(p => p.id === playlistId);
+      if (index !== -1) {
+        playlists.splice(index, 1);
+        savePlaylists();
+        renderPlaylistsSidebar();
+      }
+    }
+
+    function reorderPlaylist(playlistId, fromIndex, toIndex) {
+      const playlist = playlists.find(p => p.id === playlistId);
+      if (playlist) {
+        const [movedSong] = playlist.songs.splice(fromIndex, 1);
+        playlist.songs.splice(toIndex, 0, movedSong);
+        playlist.updatedAt = new Date().toISOString();
+        savePlaylists();
+        renderPlaylistsSidebar();
+      }
+    }
+
+    async function getRecommendedSongs() {
+      try {
+        showLoading();
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&videoCategoryId=10&key=${YOUTUBE_API_KEY}&maxResults=20`
+        );
+        if (!response.ok) throw new Error('Önerilen şarkılar yüklenemedi');
+        const data = await response.json();
+        recommendedMusic = data.items.map(item => ({
+          videoId: item.id,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.high.url,
+          channelTitle: item.snippet.channelTitle,
+          type: 'youtube',
+          addedAt: new Date().toISOString()
+        }));
+        updateRecommendedMusicGrid();
+      } catch (error) {
+        showError('Önerilen şarkılar yüklenirken bir hata oluştu');
+        console.error('Önerilen şarkılar yüklenirken hata:', error);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    let playHistory = JSON.parse(localStorage.getItem('playHistory')) || [];
+
+    function addToHistory(song) {
+      const historyItem = {
+        song,
+        playedAt: new Date().toISOString()
+      };
+      playHistory.unshift(historyItem);
+      if (playHistory.length > 50) {
+        playHistory.pop();
+      }
+      localStorage.setItem('playHistory', JSON.stringify(playHistory));
+    }
+
+    function showPlayHistory() {
+      const mainContent = document.querySelector('.main-content');
+      mainContent.innerHTML = `
+        <div class="section">
+          <h2>Çalma Geçmişi</h2>
+          <div class="music-grid" id="historyGrid"></div>
+        </div>
+      `;
+      const grid = document.getElementById('historyGrid');
+      playHistory.forEach(item => {
+        const card = createMusicCard(item.song);
+        grid.appendChild(card);
+      });
+    }
+
+    function showSongDetail(song) {
+      addToHistory(song);
+      playSong(song);
+      document.getElementById('songDetail').classList.add('active');
+      mainContent.style.display = 'none';
+      playerBar.style.display = 'none';
+      currentView = 'songDetail';
+      // Geri butonunu tekrar bağla
+      const backBtn = document.querySelector('.song-detail .back-btn');
+      if (backBtn) backBtn.onclick = goBack;
+      // Glass efektli arka plan için albüm kapağını CSS değişkeni olarak ata
+      const bgUrl = song.thumbnail ? `url('${song.thumbnail}')` : 'none';
+      document.getElementById('songDetail').style.setProperty('--song-bg-image', bgUrl);
+    }
+
+    async function searchSongs(query) {
+      try {
+        showLoading();
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&key=${YOUTUBE_API_KEY}&maxResults=20`
+        );
+        if (!response.ok) throw new Error('Arama başarısız');
+        const data = await response.json();
+        lastSearchResults = data.items
+          .filter(item => item.id.videoId)
+          .map(item => ({
+            videoId: item.id.videoId,
+            title: item.snippet.title,
+            thumbnail: item.snippet.thumbnails.high.url,
+            channelTitle: item.snippet.channelTitle,
+            type: 'youtube',
+            addedAt: new Date().toISOString()
+          }));
+        updateSearchResults();
+      } catch (error) {
+        showError('Arama yapılırken bir hata oluştu');
+        console.error('Arama hatası:', error);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    window.onload = () => {
+      updateFavoritesGrid();
+      renderPlaylistsSidebar();
+      updateAddToPlaylistBtn();
+    };
+
+    // --- GERİ BUTONUNU HER DURUMDA ÇALIŞTIR ---
+    function goBack() {
+      document.getElementById('songDetail').classList.remove('active');
+      document.querySelector('.main-content').style.display = '';
+      document.getElementById('playerBar').style.display = '';
+      if (currentView === 'home') renderHomeSection();
+      else if (currentView === 'search') renderSearchSection();
+      else if (currentView === 'favorites') renderFavoritesSection();
+      else if (currentView === 'playlist') {
+        const playlistIndex = playlists.findIndex(pl => pl.name === document.querySelector('.section h2').textContent);
+        if (playlistIndex !== -1) showPlaylistSongs(playlistIndex);
+      }
+    }
+
+    // Her zaman eventListener ile bağla (render sonrası da çalışır)
+    document.addEventListener('DOMContentLoaded', function() {
+      const backBtn = document.querySelector('.song-detail .back-btn');
+      if (backBtn) {
+        backBtn.onclick = goBack;
+      }
+    });
+
+    // Ayrıca oynatma ekranı açıldığında da tekrar bağla
+    function showSongDetail(song) {
+      addToHistory(song);
+      playSong(song);
+      document.getElementById('songDetail').classList.add('active');
+      mainContent.style.display = 'none';
+      playerBar.style.display = 'none';
+      currentView = 'songDetail';
+      // Geri butonunu tekrar bağla
+      const backBtn = document.querySelector('.song-detail .back-btn');
+      if (backBtn) backBtn.onclick = goBack;
+    }
+
+    // --- POPÜLER PLAYLISTLERİ ANA SAYFADA GÖSTER ---
+    let popularPlaylists = [];
+
+    async function loadPopularPlaylists() {
+      // YouTube'dan popüler playlistleri çek (örnek playlist ID'leri ile)
+      const playlistIds = [
+        'PLMC9KNkIncKtPzgY-5rmhvj7fax8fdxoj', // Top Hits 2024
+        'PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-', // Global Top 50
+        'PLbpi6ZahtOH7W6gF1U0l5M8K2oQ9U8a6B', // Türkçe Pop 2024
+        'PLDcnymzs18LVXfO_x0Ei0R24qDbVtyy66', // Chill Hits
+        'PL55713C70BA91BD6E', // Billboard Hot 100
+        'PL4fGSI1pDJn6yTf3p3Kz1VJp1Rz2v2K8R' // Popüler Türkçe
+      ];
+      try {
+        const ids = playlistIds.join(',');
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${ids}&key=${YOUTUBE_API_KEY}`);
+        if (!response.ok) throw new Error('Popüler playlistler yüklenemedi');
+        const data = await response.json();
+        popularPlaylists = data.items.map(item => ({
+          id: item.id,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.medium.url,
+          channelTitle: item.snippet.channelTitle
+        }));
+        renderPopularPlaylists();
+      } catch (err) {
+        // API başarısızsa örnek veriyle göster
+        popularPlaylists = [
+          {
+            id: 'PLMC9KNkIncKtPzgY-5rmhvj7fax8fdxoj',
+            title: 'Top Hits 2024',
+            thumbnail: 'https://i.scdn.co/image/ab67706f00000002c4b6e2e2e2e2e2e2e2e2e2e2',
+            channelTitle: 'Spotify'
+          },
+          {
+            id: 'PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-',
+            title: 'Global Top 50',
+            thumbnail: 'https://i.scdn.co/image/ab67706f00000002b3b3b3b3b3b3b3b3b3b3b3b3',
+            channelTitle: 'Spotify'
+          },
+          {
+            id: 'PLbpi6ZahtOH7W6gF1U0l5M8K2oQ9U8a6B',
+            title: 'Türkçe Pop 2024',
+            thumbnail: 'https://i.scdn.co/image/ab67706f00000002a1a1a1a1a1a1a1a1a1a1a1a1',
+            channelTitle: 'Spotify'
+          },
+          {
+            id: 'PLDcnymzs18LVXfO_x0Ei0R24qDbVtyy66',
+            title: 'Chill Hits',
+            thumbnail: 'https://i.scdn.co/image/ab67706f00000002d2d2d2d2d2d2d2d2d2d2d2d2',
+            channelTitle: 'Spotify'
+          }
+        ];
+        renderPopularPlaylists();
+      }
+    }
+
+    function renderPopularPlaylists() {
+      const section = document.createElement('div');
+      section.className = 'popular-playlists-section';
+      section.innerHTML = `
+        <h2>MelodyStream'de Popüler</h2>
+        <div class="popular-playlists-grid" id="popularPlaylistsGrid"></div>
+      `;
+      const grid = section.querySelector('#popularPlaylistsGrid');
+      popularPlaylists.forEach(pl => {
+        const card = document.createElement('div');
+        card.className = 'popular-playlist-card';
+        card.innerHTML = `
+          <img src="${pl.thumbnail}" alt="${pl.title}">
+          <h3>${pl.title}</h3>
+          <p>${pl.channelTitle}</p>
+        `;
+        card.onclick = () => showPlaylistDetail(pl.id, pl.title, pl.thumbnail);
+        grid.appendChild(card);
+      });
+      // Ana sayfadaki ilk section'dan önce ekle
+      const mainContent = document.querySelector('.main-content');
+      mainContent.insertBefore(section, mainContent.firstChild);
+    }
+
+    async function showPlaylistDetail(playlistId, title, thumbnail) {
+      // Playlist içeriğini çek ve göster
+      try {
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=30&playlistId=${playlistId}&key=${YOUTUBE_API_KEY}`);
+        if (!response.ok) throw new Error('Playlist yüklenemedi');
+        const data = await response.json();
+        const songs = data.items.map(item => ({
+          videoId: item.snippet.resourceId.videoId,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails?.medium?.url || thumbnail,
+          channelTitle: item.snippet.videoOwnerChannelTitle || item.snippet.channelTitle || '',
+          type: 'youtube'
+        }));
+        // Playlist detayını göster
+        const mainContent = document.querySelector('.main-content');
+        mainContent.innerHTML = `
+          <div class="section">
+            <h2>${title}</h2>
+            <div class="music-grid" id="playlistSongs"></div>
+          </div>
+        `;
+        const grid = document.getElementById('playlistSongs');
+        songs.forEach(song => {
+          const card = createMusicCard(song);
+          grid.appendChild(card);
+        });
+        currentView = 'playlist';
+        currentSongList = songs;
+      } catch (err) {
+        alert('Playlist yüklenemedi.');
+      }
+    }
+  </script>
+</body>
+
+</html>
