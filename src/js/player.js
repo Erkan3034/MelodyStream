@@ -68,11 +68,9 @@ function formatTime(seconds) {
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
+// ... (formatTime stays same)
 export function playSong(song) {
-    if (!state.isYouTubeApiReady) {
-        console.warn('YouTube API henüz hazır değil.');
-        return;
-    }
+    if (!state.isYouTubeApiReady) return;
 
     if (state.youtubePlayer) {
         state.youtubePlayer.stopVideo();
@@ -81,28 +79,9 @@ export function playSong(song) {
     state.setCurrentSong(song);
 
     // Update UI
-    const currentSongName = document.getElementById('currentSongName');
-    const currentArtist = document.getElementById('currentArtist');
-    const currentThumbnail = document.getElementById('currentThumbnail');
-    const detailSongName = document.getElementById('detailSongName');
-    const detailArtist = document.getElementById('detailArtist');
-    const detailThumbnail = document.getElementById('detailThumbnail');
-
-    if (currentSongName) currentSongName.textContent = song.title;
-    if (currentArtist) currentArtist.textContent = song.channelTitle || 'Bilinmeyen Sanatçı';
-    if (currentThumbnail) currentThumbnail.src = song.thumbnail;
-    if (detailSongName) detailSongName.textContent = song.title;
-    if (detailArtist) detailArtist.textContent = song.channelTitle || 'Bilinmeyen Sanatçı';
-    if (detailThumbnail) detailThumbnail.src = song.thumbnail;
-
-    // Add-to-playlist button
-    const addBtn = document.getElementById('addToPlaylistBtn');
-    if (addBtn) addBtn.style.display = '';
-
-    // Update player bar favorite state
-    import('./app.js').then(app => {
-        if (app.updatePlayerBarFavorite) app.updatePlayerBarFavorite();
-    }).catch(() => { });
+    document.querySelectorAll('.current-song-name').forEach(el => el.textContent = song.title);
+    document.querySelectorAll('.current-artist').forEach(el => el.textContent = song.channelTitle || 'Bilinmeyen Sanatçı');
+    document.querySelectorAll('.current-thumbnail').forEach(el => el.src = song.thumbnail);
 
     if (!state.youtubePlayer) {
         const playerContainer = document.createElement('div');
@@ -111,93 +90,78 @@ export function playSong(song) {
         document.body.appendChild(playerContainer);
 
         const player = new YT.Player('youtube-player', {
-            height: '0',
-            width: '0',
+            height: '0', width: '0',
             videoId: song.videoId,
-            playerVars: {
-                controls: 0,
-                autoplay: 1,
-                modestbranding: 1,
-                rel: 0,
-                fs: 0,
-            },
+            playerVars: { controls: 0, autoplay: 1, modestbranding: 1, rel: 0, fs: 0 },
             events: {
                 onReady: (event) => {
                     state.setPlayerReady(true);
                     event.target.playVideo();
                     state.setIsPlaying(true);
                     updatePlayPauseButtons();
-
                     if (state.progressInterval) clearInterval(state.progressInterval);
                     state.setProgressInterval(setInterval(updateProgress, 500));
-
                     enableBackgroundPlayback();
                     requestWakeLock();
                 },
                 onStateChange: (event) => {
                     if (event.data === YT.PlayerState.ENDED) {
-                        if (state.progressInterval) clearInterval(state.progressInterval);
-                        if (state.isRepeatOn) {
-                            event.target.playVideo();
-                        } else {
-                            playNext();
-                        }
+                        if (state.isRepeatOn) event.target.playVideo();
+                        else playNext();
                     } else if (event.data === YT.PlayerState.PLAYING) {
                         state.setIsPlaying(true);
                         updatePlayPauseButtons();
-
-                        // Start or restart progress interval
-                        if (state.progressInterval) clearInterval(state.progressInterval);
-                        state.setProgressInterval(setInterval(updateProgress, 500));
-
-                        // Sync silent audio & wake lock every time YT reports PLAYING
-                        // (covers resume-after-background, headphone reconnect, etc.)
                         enableBackgroundPlayback();
                         requestWakeLock();
                         updateMediaSessionPlaybackState(true);
-
                     } else if (event.data === YT.PlayerState.PAUSED) {
-                        // Only mark as paused if the page is visible (background hide fires PAUSED)
+                        // Crucial: Only sync pause if NOT hidden. 
+                        // If hidden, the browser might have forced pause — we'll fight back via heartbeat.
                         if (!document.hidden) {
                             state.setIsPlaying(false);
                             updatePlayPauseButtons();
-                            if (state.progressInterval) clearInterval(state.progressInterval);
                             updateMediaSessionPlaybackState(false);
                         }
-                    } else if (event.data === YT.PlayerState.BUFFERING) {
-                        // Keep silentAudio alive during buffering stalls
-                        enableBackgroundPlayback();
                     }
-                },
-                onError: (event) => {
-                    console.error('YouTube Player Hatası:', event.data);
-                },
-            },
+                }
+            }
         });
         state.setYoutubePlayer(player);
     } else {
         state.youtubePlayer.loadVideoById(song.videoId);
     }
 
-    // Media Session
+    // Media Session Update
     updateMediaSession(song, {
         onPlay: () => togglePlayPause(),
         onPause: () => togglePlayPause(),
         onNext: () => playNext(),
         onPrevious: () => playPrevious(),
-        onSeek: (time) => {
-            if (state.youtubePlayer && state.playerReady) {
-                state.youtubePlayer.seekTo(time, true);
-            }
-        },
+        onSeek: (time) => state.youtubePlayer?.seekTo(time, true),
     });
 }
 
+// ── Background Heartbeat ───────────────────────────────────────
+// Monitors player health every 2s, especially when page is hidden.
+setInterval(() => {
+    if (state.isPlaying && state.youtubePlayer && state.playerReady) {
+        try {
+            const ps = state.youtubePlayer.getPlayerState();
+            // If we think we're playing but YT is paused (state 2), resume.
+            // This bypasses many browser background throttling mechanisms.
+            if (ps === 2 && document.hidden) {
+                console.debug('[Heartbeat] Resuming background playback...');
+                state.youtubePlayer.playVideo();
+                enableBackgroundPlayback();
+            }
+        } catch (e) { }
+    }
+}, 2000);
+
 export function togglePlayPause() {
     if (!state.youtubePlayer || !state.playerReady) return;
-
-    const playerState = state.youtubePlayer.getPlayerState();
-    if (playerState === YT.PlayerState.PLAYING) {
+    const ps = state.youtubePlayer.getPlayerState();
+    if (ps === YT.PlayerState.PLAYING) {
         state.youtubePlayer.pauseVideo();
         state.setIsPlaying(false);
     } else {
@@ -207,6 +171,7 @@ export function togglePlayPause() {
     }
     updatePlayPauseButtons();
 }
+// ... (rest of the functions stay same)
 
 export function playNext() {
     if (!state.currentSong || !state.currentSongList.length) return;
