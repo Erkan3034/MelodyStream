@@ -12,13 +12,26 @@
         box-shadow: var(--ms-shadow-lg);
     }
 
+    /* Hamburger: fixed on screen when sidebar is closed */
     .hamburger {
         display: flex;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 200;
+    }
+
+    /* When sidebar opens, hamburger flows inside sidebar-header */
+    .sidebar.open .hamburger {
+        position: relative;
+        top: auto;
+        left: auto;
+        z-index: auto;
     }
 
     .main-content {
         margin-left: 0;
-        padding: 60px 16px 160px;
+        padding: 52px 16px 160px;
     }
 
     .tab-bar {
@@ -82,7 +95,7 @@
 
 @media screen and (max-width: 768px) {
     .main-content {
-        padding: 56px 12px 160px;
+        padding: 48px 12px 160px;
     }
 
     .section-header h2 {
@@ -105,19 +118,18 @@
         font-size: 16px;
     }
 
-    .song-detail .album-art {
-        width: 260px;
-        max-width: 75vw;
+    .sd-album-art {
+        max-width: 260px;
     }
 
-    .song-detail .song-info h3 {
+    .sd-song-text h3 {
         font-size: 18px;
     }
 }
 
 @media screen and (max-width: 480px) {
     .main-content {
-        padding: 52px 10px 150px;
+        padding: 48px 10px 150px;
     }
 
     .section-header h2 {
@@ -169,20 +181,18 @@
         font-size: 9px;
     }
 
-    .song-detail .album-art {
-        width: 240px;
-        max-width: 70vw;
-        margin-bottom: 24px;
+    .sd-album-art {
+        max-width: 240px;
     }
 
-    .song-detail .song-info h3 {
+    .sd-song-text h3 {
         font-size: 16px;
     }
 
-    .song-detail .detail-player .player-controls .play-btn {
-        width: 48px;
-        height: 48px;
-        font-size: 18px;
+    .sd-play-btn {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 20px !important;
     }
 
     .modal-content {

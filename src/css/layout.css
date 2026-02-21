@@ -30,8 +30,6 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 28px;
-    padding: 0 12px;
 }
 
 .sidebar .logo h2 {
@@ -55,6 +53,15 @@
     flex-shrink: 0;
 }
 
+/* Sidebar header row — logo + hamburger */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding: 0 12px;
+}
+
 /* ---- Main Content ---- */
 .main-content {
     flex: 1;
@@ -65,44 +72,48 @@
     transition: margin-left var(--ms-transition);
 }
 
-/* ---- Hamburger ---- */
+/* ---- Hamburger (Minimal — inside sidebar) ---- */
 .hamburger {
     display: none;
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    z-index: 200;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 5px;
     cursor: pointer;
-    background: rgba(0, 0, 0, 0.7);
+    background: transparent;
     border-radius: 50%;
     -webkit-tap-highlight-color: transparent;
+    transition: background var(--ms-transition);
+    flex-shrink: 0;
+}
+
+.hamburger:active {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .hamburger span {
     display: block;
-    width: 16px;
-    height: 2px;
+    width: 18px;
+    height: 1.5px;
     background: var(--ms-text);
-    margin: 2px 0;
-    border-radius: 1px;
-    transition: all var(--ms-transition);
+    border-radius: 2px;
+    transition: all 0.25s ease;
+    transform-origin: center;
 }
 
 .hamburger.active span:nth-child(1) {
-    transform: translateY(6px) rotate(45deg);
+    transform: translateY(3.25px) rotate(45deg);
 }
 
 .hamburger.active span:nth-child(2) {
     opacity: 0;
+    transform: scaleX(0);
 }
 
 .hamburger.active span:nth-child(3) {
-    transform: translateY(-6px) rotate(-45deg);
+    transform: translateY(-3.25px) rotate(-45deg);
 }
 
 /* ---- Sidebar Overlay ---- */

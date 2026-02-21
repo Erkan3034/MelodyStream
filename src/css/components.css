@@ -118,6 +118,14 @@
     scrollbar-width: none;
 }
 
+/* Vertical list for search results */
+.search-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 24px;
+}
+
 .music-grid::-webkit-scrollbar {
     display: none;
 }
@@ -238,6 +246,72 @@
 
 .favorite-btn:hover {
     transform: scale(1.15);
+    color: var(--ms-green);
+}
+
+/* ---- Search List Item (Vertical Layout) ---- */
+.search-list-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 12px;
+    background: transparent;
+    border-radius: var(--ms-radius-sm);
+    cursor: pointer;
+    transition: background var(--ms-transition-fast);
+}
+
+.search-list-item:hover {
+    background: var(--ms-bg-highlight);
+}
+
+.search-list-item img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.search-list-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.search-list-info h3 {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--ms-text);
+}
+
+.search-list-info p {
+    font-size: 13px;
+    color: var(--ms-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-list-item .favorite-btn {
+    opacity: 1;
+    background: none;
+    border: none;
+    color: var(--ms-text-secondary);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 8px;
+    transition: color 0.2s;
+    position: relative;
+    /* Reset from card absolute */
+    top: auto;
+    right: auto;
+}
+
+.search-list-item .favorite-btn.active {
     color: var(--ms-green);
 }
 
@@ -471,9 +545,32 @@
     color: var(--ms-text);
 }
 
-/* ============================
-   Full-Screen Player (Spotify)
-   ============================ */
+/* Heart button in player bar */
+.player-fav-btn {
+    color: var(--ms-text-secondary);
+    font-size: 16px;
+    padding: 6px;
+    flex-shrink: 0;
+    transition: all var(--ms-transition-fast);
+    margin-left: 4px;
+}
+
+.player-fav-btn:hover {
+    color: var(--ms-text);
+    transform: scale(1.15);
+}
+
+.player-fav-btn.active {
+    color: var(--ms-green);
+}
+
+.player-fav-btn.active:hover {
+    color: var(--ms-green-light);
+}
+
+/* ====================================
+   Full-Screen Player (Spotify-Exact)
+   ==================================== */
 .song-detail {
     display: none;
     position: fixed;
@@ -482,16 +579,14 @@
     overflow: hidden;
     color: var(--ms-text);
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
 }
 
 .song-detail.active {
     display: flex;
-    animation: playerSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: sdSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes playerSlideUp {
+@keyframes sdSlideUp {
     from {
         transform: translateY(100%);
     }
@@ -501,18 +596,18 @@
     }
 }
 
-/* Background — gradient from album colors */
+/* Background — blurred album art */
 .song-detail::before {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -40px;
     z-index: 0;
-    background: var(--ms-bg-base);
+    background-color: #333;
     background-image: var(--song-bg-image, none);
     background-size: cover;
     background-position: center;
-    filter: blur(100px) brightness(0.3) saturate(1.5);
-    transform: scale(1.3);
+    filter: blur(80px) brightness(0.35) saturate(1.6);
+    transform: scale(1.2);
 }
 
 .song-detail::after {
@@ -520,153 +615,390 @@
     position: absolute;
     inset: 0;
     z-index: 1;
-    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
+    background: linear-gradient(180deg,
+            rgba(0, 0, 0, 0.2) 0%,
+            rgba(0, 0, 0, 0.4) 50%,
+            rgba(0, 0, 0, 0.7) 100%);
 }
 
-.song-detail .song-content {
+/* ---- Header Bar ---- */
+.sd-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     position: relative;
     z-index: 2;
+    padding: 16px 16px 0;
     width: 100%;
-    max-width: 400px;
+    flex-shrink: 0;
+}
+
+.sd-header-btn {
+    width: 40px;
+    height: 40px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    padding: 0 32px;
-}
-
-/* Back button */
-.song-detail .back-btn {
-    position: fixed;
-    top: 16px;
-    left: 16px;
-    z-index: 10;
+    justify-content: center;
     color: var(--ms-text);
-    font-size: 22px;
-    padding: 8px;
-    opacity: 0.8;
+    font-size: 18px;
+    opacity: 0.85;
     transition: opacity var(--ms-transition-fast);
+    flex-shrink: 0;
 }
 
-.song-detail .back-btn:hover {
+.sd-header-btn:hover {
     opacity: 1;
 }
 
-/* Album Art */
-.song-detail .album-art {
-    width: 300px;
-    max-width: 80vw;
-    aspect-ratio: 1;
-    margin-bottom: 32px;
-    border-radius: var(--ms-radius-md);
-    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
-    object-fit: cover;
-    background: var(--ms-bg-elevated);
+.sd-header-title {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ms-text);
+    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 12px;
 }
 
-/* Song Info */
-.song-detail .song-info {
+/* ---- Body ---- */
+.sd-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    padding: 20px 32px 48px;
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+/* ---- Album Art ---- */
+.sd-album-art {
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 1;
+    border-radius: var(--ms-radius-md);
+    object-fit: cover;
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.55);
+    background: var(--ms-bg-elevated);
+    margin-bottom: 28px;
+}
+
+/* ---- Song Info Row ---- */
+.sd-song-info {
     width: 100%;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
-.song-detail .song-info-text {
+.sd-song-text {
     min-width: 0;
     flex: 1;
 }
 
-.song-detail .song-info h3 {
-    font-size: 22px;
+.sd-song-text h3 {
+    font-size: 20px;
     font-weight: 700;
-    margin-bottom: 4px;
-    line-height: 1.2;
+    line-height: 1.25;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     letter-spacing: -0.01em;
+}
+
+.sd-song-text p {
+    font-size: 14px;
+    color: var(--ms-text-secondary);
+    font-weight: 400;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.song-detail .song-info p {
-    font-size: 14px;
-    color: var(--ms-text-secondary);
-    font-weight: 500;
-}
-
-.song-detail .favorite-btn {
-    position: relative;
-    top: auto;
-    right: auto;
-    opacity: 1;
+.sd-fav-btn {
     font-size: 22px;
-    padding: 8px;
+    color: var(--ms-text-secondary);
+    padding: 4px;
     flex-shrink: 0;
+    transition: all var(--ms-transition-fast);
 }
 
-/* Detail Player */
-.song-detail .detail-player {
+.sd-fav-btn.active {
+    color: var(--ms-green);
+}
+
+.sd-fav-btn:hover {
+    transform: scale(1.15);
+}
+
+/* ---- Progress ---- */
+.sd-progress {
     width: 100%;
+    margin-bottom: 8px;
 }
 
-.song-detail .detail-player .progress-bar {
+/* Green slider */
+.sd-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.25);
+    outline: none;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.sd-slider::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+}
+
+.sd-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--ms-text);
+    cursor: pointer;
+    margin-top: -4px;
+}
+
+.sd-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--ms-text);
+    cursor: pointer;
+    border: none;
+}
+
+.sd-times {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    justify-content: space-between;
 }
 
-.song-detail .detail-player .progress-bar time {
+.sd-times time {
     font-size: 11px;
     color: var(--ms-text-subdued);
-    min-width: 36px;
     font-variant-numeric: tabular-nums;
 }
 
-.song-detail .detail-player .slider {
-    flex: 1;
-}
-
-.song-detail .detail-player .slider::-webkit-slider-thumb {
-    opacity: 1;
-}
-
-.song-detail .detail-player .player-controls {
+/* ---- Controls ---- */
+.sd-controls {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 8px;
+    padding: 0 4px;
 }
 
-.song-detail .detail-player .player-controls button {
+.sd-controls button {
     color: var(--ms-text);
     font-size: 22px;
     padding: 8px;
     transition: all var(--ms-transition-fast);
+    opacity: 0.85;
 }
 
-.song-detail .detail-player .player-controls button:hover {
-    transform: scale(1.1);
+.sd-controls button:hover {
+    opacity: 1;
+    transform: scale(1.08);
 }
 
-.song-detail .detail-player .player-controls button.active {
+.sd-controls button.active {
     color: var(--ms-green);
+    opacity: 1;
 }
 
-/* Large green play button */
-.song-detail .detail-player .player-controls .play-btn {
-    background: var(--ms-text);
-    color: var(--ms-black);
-    width: 56px;
-    height: 56px;
+/* Green dot under active shuffle/repeat (Spotify) */
+.sd-controls button.active::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 4px;
+    background: var(--ms-green);
     border-radius: 50%;
-    font-size: 22px;
-    transition: transform var(--ms-transition-fast);
+    margin: 4px auto 0;
 }
 
-.song-detail .detail-player .player-controls .play-btn:hover {
-    transform: scale(1.06);
-    color: var(--ms-black);
+/* Large white play button */
+.sd-play-btn {
+    background: var(--ms-text) !important;
+    color: var(--ms-black) !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50% !important;
+    font-size: 24px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    opacity: 1 !important;
+}
+
+.sd-play-btn:hover {
+    transform: scale(1.06) !important;
+}
+
+/* ---- YT Music Tabs (Bottom Drawer Style) ---- */
+.sd-tabs {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(18, 18, 18, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    transform: translateY(calc(100% - 50px));
+    /* Hide content by default, show bar only */
+}
+
+/* When expanded, show the content */
+.sd-tabs.expanded {
+    transform: translateY(0);
+}
+
+.sd-tabs-bar {
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    min-height: 50px;
+    cursor: pointer;
+}
+
+.sd-tab {
+    padding: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ms-text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.sd-tab.active {
+    color: var(--ms-text);
+}
+
+.sd-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--ms-text);
+}
+
+.sd-tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 20px 40px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.sd-tabs.expanded .sd-tab-content {
+    opacity: 1;
+}
+
+.sd-tab-panel {
+    display: none;
+}
+
+.sd-tab-panel.active {
+    display: block;
+}
+
+/* Queue/Related List Item */
+.sd-queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 24px;
+}
+
+.sd-queue-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: var(--ms-radius-sm);
+    cursor: pointer;
+    transition: background var(--ms-transition-fast);
+}
+
+.sd-queue-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sd-queue-item.active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.sd-queue-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.sd-queue-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sd-queue-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sd-queue-info p {
+    font-size: 12px;
+    color: var(--ms-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sd-queue-active-icon {
+    color: var(--ms-green);
+    font-size: 12px;
+    display: none;
+}
+
+.sd-queue-item.active .sd-queue-active-icon {
+    display: block;
 }
 
 /* ---- Playlists (Sidebar) ---- */

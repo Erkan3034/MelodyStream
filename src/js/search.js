@@ -5,6 +5,8 @@
 
 import * as state from './state.js';
 import { createMusicCard } from './ui.js';
+import { isFavorite, toggleFavorite } from './favorites.js';
+import { showSongDetail } from './navigation.js';
 
 function debounce(func, wait) {
     let timeout;
@@ -29,10 +31,41 @@ async function performSearch(query) {
         .map(item => ({
             videoId: item.id.videoId,
             title: item.snippet.title,
-            thumbnail: item.snippet.thumbnails.high.url,
+            thumbnail: item.snippet.thumbnails?.default?.url || item.snippet.thumbnails.high.url,
             channelTitle: item.snippet.channelTitle,
             type: 'youtube',
         }));
+}
+
+function createSearchListItem(song) {
+    const item = document.createElement('div');
+    item.className = 'search-list-item';
+
+    const favActive = isFavorite(song.videoId) ? 'active' : '';
+
+    item.innerHTML = `
+        <img src="${song.thumbnail}" alt="${song.title}" loading="lazy">
+        <div class="search-list-info">
+            <h3>${song.title}</h3>
+            <p>${song.channelTitle || 'Bilinmeyen Sanatçı'}</p>
+        </div>
+        <button class="favorite-btn ${favActive}" aria-label="Favori">
+            <i class="fas fa-heart"></i>
+        </button>
+    `;
+
+    item.onclick = () => showSongDetail(song);
+
+    const favBtn = item.querySelector('.favorite-btn');
+    if (favBtn) {
+        favBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleFavorite(song);
+            favBtn.classList.toggle('active', isFavorite(song.videoId));
+        };
+    }
+
+    return item;
 }
 
 export function attachSearchHandler(inputEl, gridEl, options = {}) {
@@ -56,15 +89,14 @@ export function attachSearchHandler(inputEl, gridEl, options = {}) {
             gridEl.innerHTML = '';
             if (results.length === 0) {
                 gridEl.innerHTML = `
-          <div class="empty-state" style="grid-column: 1 / -1;">
+          <div class="empty-state">
             <i class="fas fa-search"></i>
             <p>Sonuç bulunamadı</p>
           </div>
         `;
             } else {
                 results.forEach(song => {
-                    const card = createMusicCard(song);
-                    gridEl.appendChild(card);
+                    gridEl.appendChild(createSearchListItem(song));
                 });
             }
 
@@ -93,7 +125,7 @@ export function renderSearchSection() {
       <div class="section-header">
         <h2>Arama Sonuçları</h2>
       </div>
-      <div class="music-grid" id="searchResults"></div>
+      <div class="search-results-list" id="searchResults"></div>
     </div>
   `;
 

@@ -7,7 +7,7 @@ import './state.js';
 import * as state from './state.js';
 import { playSong, togglePlayPause, playNext, playPrevious, shufflePlaylist, toggleRepeat, seekTo, setVolume } from './player.js';
 import { renderPlaylistsSidebar, openAddToPlaylistModal } from './playlist.js';
-import { updateFavoritesGrid, renderFavoritesSection } from './favorites.js';
+import { updateFavoritesGrid, renderFavoritesSection, isFavorite, toggleFavorite } from './favorites.js';
 import { renderSearchSection } from './search.js';
 import { renderHomeSection, loadRecommendedMusic } from './ui.js';
 import { showSongDetail, goBack, showPlayHistory, initSidebar, initSwipeGestures } from './navigation.js';
@@ -31,6 +31,7 @@ window.addEventListener('DOMContentLoaded', () => {
     initSwipeGestures();
     initTabBar();
     initPlayerBarControls();
+    initPlayerBarFavorite();
     initNavItems();
 });
 
@@ -167,9 +168,33 @@ function initPlayerBarControls() {
             ) return;
 
             if (state.currentSong) {
-                showSongDetail(state.currentSong);
+                showSongDetail(state.currentSong, true);
             }
         });
+    }
+}
+
+// ---- Player Bar Favorite Button ----
+function initPlayerBarFavorite() {
+    const favBtn = document.getElementById('playerFavBtn');
+    if (!favBtn) return;
+
+    favBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!state.currentSong) return;
+        toggleFavorite(state.currentSong);
+        updatePlayerBarFavorite();
+    });
+}
+
+// Call this whenever the current song changes
+export function updatePlayerBarFavorite() {
+    const favBtn = document.getElementById('playerFavBtn');
+    if (!favBtn) return;
+    if (state.currentSong && isFavorite(state.currentSong.videoId)) {
+        favBtn.classList.add('active');
+    } else {
+        favBtn.classList.remove('active');
     }
 }
 

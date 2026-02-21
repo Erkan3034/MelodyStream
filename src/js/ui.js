@@ -190,7 +190,7 @@ export function renderHomeSection() {
     <!-- Quick Access -->
     <div class="section" id="quickAccessSection" style="display: none;">
       <div class="section-header">
-        <h2>⚡ Hızlı Erişim</h2>
+        <h2>Hızlı Erişim</h2>
       </div>
       <div class="music-grid" id="quickAccessGrid"></div>
     </div>

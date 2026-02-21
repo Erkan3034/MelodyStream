@@ -91,6 +91,11 @@ export function playSong(song) {
     const addBtn = document.getElementById('addToPlaylistBtn');
     if (addBtn) addBtn.style.display = '';
 
+    // Update player bar favorite state
+    import('./app.js').then(app => {
+        if (app.updatePlayerBarFavorite) app.updatePlayerBarFavorite();
+    }).catch(() => { });
+
     if (!state.youtubePlayer) {
         const playerContainer = document.createElement('div');
         playerContainer.id = 'youtube-player';
@@ -123,6 +128,7 @@ export function playSong(song) {
                 },
                 onStateChange: (event) => {
                     if (event.data === YT.PlayerState.ENDED) {
+                        if (state.progressInterval) clearInterval(state.progressInterval);
                         if (state.isRepeatOn) {
                             event.target.playVideo();
                         } else {
@@ -131,9 +137,14 @@ export function playSong(song) {
                     } else if (event.data === YT.PlayerState.PLAYING) {
                         state.setIsPlaying(true);
                         updatePlayPauseButtons();
+
+                        // Start or restart progress interval
+                        if (state.progressInterval) clearInterval(state.progressInterval);
+                        state.setProgressInterval(setInterval(updateProgress, 500));
                     } else if (event.data === YT.PlayerState.PAUSED) {
                         state.setIsPlaying(false);
                         updatePlayPauseButtons();
+                        if (state.progressInterval) clearInterval(state.progressInterval);
                     }
                 },
                 onError: (event) => {

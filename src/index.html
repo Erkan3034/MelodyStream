@@ -21,17 +21,17 @@
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Hamburger -->
-    <div class="hamburger" id="hamburgerMenu" aria-label="Menü">
-        <span></span><span></span><span></span>
-    </div>
-
     <div class="app-wrapper">
         <!-- ===== SIDEBAR ===== -->
         <aside class="sidebar" id="sidebar">
-            <div class="logo">
-                <div class="logo-icon">♪</div>
-                <h2>MelodyStream</h2>
+            <div class="sidebar-header">
+                <div class="hamburger" id="hamburgerMenu" aria-label="Menü">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="logo">
+                    <div class="logo-icon">♪</div>
+                    <h2>MelodyStream</h2>
+                </div>
             </div>
 
             <nav>
@@ -54,8 +54,8 @@
             <div class="sidebar-footer">
                 <div class="developer">Erkan Turgut</div>
                 <div class="contact-links">
-                    <a href="https://github.com/erkantr" target="_blank" rel="noopener">GitHub</a>
-                    <a href="https://linkedin.com/in/erkantr" target="_blank" rel="noopener">LinkedIn</a>
+                    <a href="https://github.com/Erkan3034" target="_blank" rel="noopener">GitHub</a>
+                    <a href="https://linkedin.com/in/erkanturgut1205" target="_blank" rel="noopener">LinkedIn</a>
                 </div>
             </div>
         </aside>
@@ -83,6 +83,9 @@
                 <button id="playPauseButton" class="play-btn"><i class="fas fa-play"></i></button>
                 <button id="nextButton"><i class="fas fa-forward-step"></i></button>
                 <button id="repeatButton" data-action="repeat"><i class="fas fa-repeat"></i></button>
+                <button class="player-fav-btn" id="playerFavBtn" aria-label="Favorilere Ekle">
+                    <i class="fas fa-heart"></i>
+                </button>
             </div>
             <div class="progress-bar">
                 <time id="currentTime">0:00</time>
@@ -103,32 +106,56 @@
 
     <!-- ===== FULL-SCREEN PLAYER ===== -->
     <div class="song-detail" id="songDetail">
-        <div class="song-content">
-            <button class="back-btn"><i class="fas fa-chevron-down"></i></button>
-            <img id="detailThumbnail" class="album-art" src="" alt="">
+        <!-- Top Header -->
+        <div class="sd-header">
+            <button class="sd-header-btn sd-back-btn"><i class="fas fa-chevron-down"></i></button>
+            <span class="sd-header-title" id="detailHeaderTitle">—</span>
+            <div class="sd-header-btn" style="visibility:hidden"><i class="fas fa-chevron-down"></i></div>
+        </div>
 
-            <div class="song-info">
-                <div class="song-info-text">
+        <!-- Content -->
+        <div class="sd-body">
+            <img id="detailThumbnail" class="sd-album-art" src="" alt="">
+
+            <div class="sd-song-info">
+                <div class="sd-song-text">
                     <h3 id="detailSongName">—</h3>
                     <p id="detailArtist">—</p>
                 </div>
-                <button class="favorite-btn" id="detailFavoriteBtn">
+                <button class="sd-fav-btn" id="detailFavoriteBtn">
                     <i class="fas fa-heart"></i>
                 </button>
             </div>
 
-            <div class="detail-player">
-                <div class="progress-bar">
+            <div class="sd-progress">
+                <input type="range" class="sd-slider" id="detailProgressSlider" min="0" max="100" value="0">
+                <div class="sd-times">
                     <time id="detailCurrentTime">0:00</time>
-                    <input type="range" class="slider" id="detailProgressSlider" min="0" max="100" value="0">
                     <time id="detailDuration">0:00</time>
                 </div>
-                <div class="player-controls">
-                    <button id="detailShuffleButton" data-action="shuffle"><i class="fas fa-shuffle"></i></button>
-                    <button id="detailPrevButton"><i class="fas fa-backward-step"></i></button>
-                    <button id="detailPlayPauseButton" class="play-btn"><i class="fas fa-play"></i></button>
-                    <button id="detailNextButton"><i class="fas fa-forward-step"></i></button>
-                    <button id="detailRepeatButton" data-action="repeat"><i class="fas fa-repeat"></i></button>
+            </div>
+
+            <div class="sd-controls">
+                <button id="detailShuffleButton" data-action="shuffle"><i class="fas fa-shuffle"></i></button>
+                <button id="detailPrevButton"><i class="fas fa-backward-step"></i></button>
+                <button id="detailPlayPauseButton" class="sd-play-btn"><i class="fas fa-play"></i></button>
+                <button id="detailNextButton"><i class="fas fa-forward-step"></i></button>
+                <button id="detailRepeatButton" data-action="repeat"><i class="fas fa-repeat"></i></button>
+            </div>
+
+            <!-- YT Music style tabs -->
+            <div class="sd-tabs">
+                <div class="sd-tabs-bar">
+                    <button class="sd-tab active" data-sd-tab="upnext">Sıradaki</button>
+                    <button class="sd-tab" data-sd-tab="related">Benzer</button>
+                </div>
+                <div class="sd-tab-content" id="sdTabContent">
+                    <div class="sd-tab-panel active" data-sd-panel="upnext" id="sdUpnextPanel">
+                        <div class="sd-queue-list" id="sdQueueList"></div>
+                    </div>
+                    <div class="sd-tab-panel" data-sd-panel="related" id="sdRelatedPanel">
+                        <div class="sd-queue-list" id="sdRelatedList"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -144,7 +171,7 @@
                 <i class="fas fa-search"></i><span>Ara</span>
             </button>
             <button class="tab-item" data-tab="library">
-                <i class="fas fa-lines-staggered"></i><span>Kitaplığın</span>
+                <i class="fas fa-book-open"></i><span>Kitaplığın</span>
             </button>
             <button class="tab-item" data-tab="profile">
                 <i class="fas fa-user"></i><span>Profil</span>
