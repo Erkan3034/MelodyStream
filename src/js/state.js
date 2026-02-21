@@ -28,6 +28,7 @@ export let playHistory = JSON.parse(localStorage.getItem('playHistory')) || [];
 export let recommendedMusic = [];
 export let lastSearchResults = [];
 export let popularPlaylists = [];
+export let user = null;
 
 // State setters (since ES modules export by value for primitives)
 export function setYoutubePlayer(player) { youtubePlayer = player; }
@@ -46,3 +47,4 @@ export function setPlayHistory(history) { playHistory = history; }
 export function setRecommendedMusic(music) { recommendedMusic = music; }
 export function setLastSearchResults(results) { lastSearchResults = results; }
 export function setPopularPlaylists(pls) { popularPlaylists = pls; }
+export function setUser(u) { user = u; }

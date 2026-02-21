@@ -1,17 +1,32 @@
 // =========================================
 // MelodyStream — Favorites Module
+// Cloud sync for logged-in users, localStorage for guests
 // =========================================
 
 import * as state from './state.js';
+import { api } from './api.js';
 
 export function toggleFavorite(song) {
     const index = state.favorites.findIndex(f => f.videoId === song.videoId);
-    if (index === -1) {
+    const isAdding = index === -1;
+
+    if (isAdding) {
         state.favorites.push(song);
     } else {
         state.favorites.splice(index, 1);
     }
+
+    // Always persist to localStorage as fallback
     localStorage.setItem('favorites', JSON.stringify(state.favorites));
+
+    // Sync to backend if logged in
+    if (state.user) {
+        if (isAdding) {
+            api.addFavorite(song).catch(err => console.warn('Favori senkronizasyon hatası:', err));
+        } else {
+            api.removeFavorite(song.videoId).catch(err => console.warn('Favori silme hatası:', err));
+        }
+    }
 
     // Update detail button if current song
     if (state.currentSong && state.currentSong.videoId === song.videoId) {
@@ -28,6 +43,27 @@ export function toggleFavorite(song) {
 
 export function isFavorite(videoId) {
     return state.favorites.some(f => f.videoId === videoId);
+}
+
+// Load favorites from backend (called after login)
+export async function loadFavoritesFromBackend() {
+    if (!state.user) return;
+    try {
+        const backendFavs = await api.getFavorites();
+        // Merge: backend is the source of truth when logged in
+        const mapped = backendFavs.map(f => ({
+            videoId: f.video_id,
+            title: f.title,
+            thumbnail: f.thumbnail,
+            channelTitle: f.channel_title,
+            type: 'youtube'
+        }));
+        state.setFavorites(mapped);
+        localStorage.setItem('favorites', JSON.stringify(mapped));
+        updateFavoritesGrid();
+    } catch (err) {
+        console.warn('Backend favorileri yüklenemedi, yerel kullanılıyor:', err);
+    }
 }
 
 export function updateFavoritesGrid() {

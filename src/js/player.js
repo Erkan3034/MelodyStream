@@ -41,11 +41,19 @@ function updateProgress() {
             const detailSlider = document.getElementById('detailProgressSlider');
             if (detailSlider) detailSlider.value = progress;
 
+            // Mini Bar Times
             const currentTimeEl = document.getElementById('currentTime');
             if (currentTimeEl) currentTimeEl.textContent = formatTime(currentTime);
 
             const durationEl = document.getElementById('duration');
             if (durationEl) durationEl.textContent = formatTime(duration);
+
+            // Detail View Times
+            const detailCurrentTimeEl = document.getElementById('detailCurrentTime');
+            if (detailCurrentTimeEl) detailCurrentTimeEl.textContent = formatTime(currentTime);
+
+            const detailDurationEl = document.getElementById('detailDuration');
+            if (detailDurationEl) detailDurationEl.textContent = formatTime(duration);
 
             updateMediaSessionPosition(currentTime, duration);
         }

@@ -15,7 +15,7 @@
     /* Hamburger: fixed on screen when sidebar is closed */
     .hamburger {
         display: flex;
-        position: fixed;
+        position: fixed !important;
         top: 10px;
         left: 10px;
         z-index: 200;

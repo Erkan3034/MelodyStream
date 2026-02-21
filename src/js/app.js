@@ -11,6 +11,7 @@ import { updateFavoritesGrid, renderFavoritesSection, isFavorite, toggleFavorite
 import { renderSearchSection } from './search.js';
 import { renderHomeSection, loadRecommendedMusic } from './ui.js';
 import { showSongDetail, goBack, showPlayHistory, initSidebar, initSwipeGestures } from './navigation.js';
+import { renderProfileSection, restoreSession } from './auth-ui.js';
 
 import '../css/base.css';
 import '../css/layout.css';
@@ -24,6 +25,7 @@ document.head.appendChild(tag);
 
 // DOM Ready
 window.addEventListener('DOMContentLoaded', () => {
+    restoreSession();
     renderHomeSection();
     updateFavoritesGrid();
     renderPlaylistsSidebar();
@@ -198,21 +200,5 @@ export function updatePlayerBarFavorite() {
     }
 }
 
-// ---- Profile Section (Placeholder) ----
-function renderProfileSection() {
-    const mainContent = document.querySelector('.main-content');
-    if (!mainContent) return;
-
-    mainContent.innerHTML = `
-    <div class="section">
-      <div class="section-header">
-        <h2>👤 Profil</h2>
-      </div>
-      <div class="empty-state">
-        <i class="fas fa-user-circle"></i>
-        <p>Giriş / Kayıt özelliği yakında eklenecek</p>
-      </div>
-    </div>
-  `;
-    state.setCurrentView('profile');
-}
+// ---- Profile Section ----
+// Rendered by auth-ui.js (renderProfileSection)
