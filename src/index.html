@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="MelodyStream — Ücretsiz ve Reklamsız Müzik Dinleme Uygulaması">
+    <meta name="theme-color" content="#121212">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>MelodyStream</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Hamburger -->
+    <div class="hamburger" id="hamburgerMenu" aria-label="Menü">
+        <span></span><span></span><span></span>
+    </div>
+
+    <div class="app-wrapper">
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon">♪</div>
+                <h2>MelodyStream</h2>
+            </div>
+
+            <nav>
+                <button class="nav-item active" data-nav="home">
+                    <i class="fas fa-home"></i> Ana Sayfa
+                </button>
+                <button class="nav-item" data-nav="search">
+                    <i class="fas fa-search"></i> Keşfet
+                </button>
+                <button class="nav-item" data-nav="favorites">
+                    <i class="fas fa-heart"></i> Favoriler
+                </button>
+                <button class="nav-item" data-nav="history">
+                    <i class="fas fa-clock"></i> Son Dinlenenler
+                </button>
+            </nav>
+
+            <div class="playlist-section"></div>
+
+            <div class="sidebar-footer">
+                <div class="developer">Erkan Turgut</div>
+                <div class="contact-links">
+                    <a href="https://github.com/erkantr" target="_blank" rel="noopener">GitHub</a>
+                    <a href="https://linkedin.com/in/erkantr" target="_blank" rel="noopener">LinkedIn</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            <div class="loading-spinner visible"></div>
+        </main>
+    </div>
+
+    <!-- ===== PLAYER BAR ===== -->
+    <div class="player-bar" id="playerBar">
+        <div class="now-playing">
+            <img id="currentThumbnail" class="player-album-art" src="" alt="">
+            <div class="player-song-info">
+                <div class="player-song-title" id="currentSongName">Şarkı seçin...</div>
+                <div class="player-song-artist" id="currentArtist">—</div>
+            </div>
+        </div>
+
+        <div class="player-center">
+            <div class="player-controls">
+                <button id="shuffleButton" data-action="shuffle"><i class="fas fa-shuffle"></i></button>
+                <button id="prevButton"><i class="fas fa-backward-step"></i></button>
+                <button id="playPauseButton" class="play-btn"><i class="fas fa-play"></i></button>
+                <button id="nextButton"><i class="fas fa-forward-step"></i></button>
+                <button id="repeatButton" data-action="repeat"><i class="fas fa-repeat"></i></button>
+            </div>
+            <div class="progress-bar">
+                <time id="currentTime">0:00</time>
+                <input type="range" class="slider" id="progressSlider" min="0" max="100" value="0">
+                <time id="duration">0:00</time>
+            </div>
+        </div>
+
+        <div class="volume-control">
+            <i class="fas fa-volume-high"></i>
+            <input type="range" id="volumeSlider" min="0" max="100" value="80">
+        </div>
+
+        <button id="addToPlaylistBtn" class="add-to-playlist-btn" style="display: none;">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <!-- ===== FULL-SCREEN PLAYER ===== -->
+    <div class="song-detail" id="songDetail">
+        <div class="song-content">
+            <button class="back-btn"><i class="fas fa-chevron-down"></i></button>
+            <img id="detailThumbnail" class="album-art" src="" alt="">
+
+            <div class="song-info">
+                <div class="song-info-text">
+                    <h3 id="detailSongName">—</h3>
+                    <p id="detailArtist">—</p>
+                </div>
+                <button class="favorite-btn" id="detailFavoriteBtn">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </div>
+
+            <div class="detail-player">
+                <div class="progress-bar">
+                    <time id="detailCurrentTime">0:00</time>
+                    <input type="range" class="slider" id="detailProgressSlider" min="0" max="100" value="0">
+                    <time id="detailDuration">0:00</time>
+                </div>
+                <div class="player-controls">
+                    <button id="detailShuffleButton" data-action="shuffle"><i class="fas fa-shuffle"></i></button>
+                    <button id="detailPrevButton"><i class="fas fa-backward-step"></i></button>
+                    <button id="detailPlayPauseButton" class="play-btn"><i class="fas fa-play"></i></button>
+                    <button id="detailNextButton"><i class="fas fa-forward-step"></i></button>
+                    <button id="detailRepeatButton" data-action="repeat"><i class="fas fa-repeat"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TAB BAR ===== -->
+    <div class="tab-bar">
+        <nav>
+            <button class="tab-item active" data-tab="home">
+                <i class="fas fa-home"></i><span>Ana sayfa</span>
+            </button>
+            <button class="tab-item" data-tab="search">
+                <i class="fas fa-search"></i><span>Ara</span>
+            </button>
+            <button class="tab-item" data-tab="library">
+                <i class="fas fa-lines-staggered"></i><span>Kitaplığın</span>
+            </button>
+            <button class="tab-item" data-tab="profile">
+                <i class="fas fa-user"></i><span>Profil</span>
+            </button>
+        </nav>
+    </div>
+
+    <script type="module" src="/js/app.js"></script>
+</body>
+
+</html>

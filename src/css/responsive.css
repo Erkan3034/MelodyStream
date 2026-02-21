@@ -1,0 +1,208 @@
+/* =========================================
+   MelodyStream — Responsive (Spotify-style)
+   ========================================= */
+
+@media screen and (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: var(--ms-shadow-lg);
+    }
+
+    .hamburger {
+        display: flex;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 60px 16px 160px;
+    }
+
+    .tab-bar {
+        display: block;
+    }
+
+    .player-bar {
+        bottom: var(--ms-tab-bar-height);
+        padding: 0 12px;
+        height: 56px;
+    }
+
+    /* Simplified mobile player */
+    .player-bar .player-center {
+        flex: none;
+    }
+
+    .player-bar .progress-bar {
+        display: none;
+    }
+
+    .player-bar .player-controls {
+        gap: 4px;
+    }
+
+    .player-bar .player-controls button[data-action="shuffle"],
+    .player-bar .player-controls button[data-action="repeat"] {
+        display: none;
+    }
+
+    .player-bar .volume-control {
+        display: none;
+    }
+
+    .player-bar .add-to-playlist-btn {
+        display: none !important;
+    }
+
+    .player-bar .now-playing {
+        max-width: 60%;
+    }
+
+    .player-bar .player-album-art {
+        width: 44px;
+        height: 44px;
+    }
+
+    /* Horizontal scroll cards  */
+    .music-card {
+        min-width: 150px;
+        max-width: 150px;
+        padding: 12px;
+    }
+
+    .popular-playlist-card {
+        min-width: 150px;
+        max-width: 150px;
+        padding: 12px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .main-content {
+        padding: 56px 12px 160px;
+    }
+
+    .section-header h2 {
+        font-size: 20px;
+    }
+
+    .music-card {
+        min-width: 140px;
+        max-width: 140px;
+        padding: 10px;
+    }
+
+    .music-card h3 {
+        font-size: 13px;
+    }
+
+    .music-card .play-overlay {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+
+    .song-detail .album-art {
+        width: 260px;
+        max-width: 75vw;
+    }
+
+    .song-detail .song-info h3 {
+        font-size: 18px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .main-content {
+        padding: 52px 10px 150px;
+    }
+
+    .section-header h2 {
+        font-size: 18px;
+    }
+
+    .music-card {
+        min-width: 130px;
+        max-width: 130px;
+        padding: 8px;
+    }
+
+    .music-card h3 {
+        font-size: 12px;
+    }
+
+    .music-card p {
+        font-size: 11px;
+    }
+
+    .player-bar {
+        height: 52px;
+    }
+
+    .player-bar .player-album-art {
+        width: 40px;
+        height: 40px;
+    }
+
+    .player-bar .player-song-title {
+        font-size: 13px;
+    }
+
+    .player-bar .player-controls .play-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .tab-bar {
+        height: 50px;
+    }
+
+    .tab-item i {
+        font-size: 20px;
+    }
+
+    .tab-item span {
+        font-size: 9px;
+    }
+
+    .song-detail .album-art {
+        width: 240px;
+        max-width: 70vw;
+        margin-bottom: 24px;
+    }
+
+    .song-detail .song-info h3 {
+        font-size: 16px;
+    }
+
+    .song-detail .detail-player .player-controls .play-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 24px 20px;
+    }
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+    .tab-bar {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
