@@ -9,19 +9,24 @@ import { playSong, playNext, playPrevious } from './player.js';
 import { isFavorite, toggleFavorite } from './favorites.js';
 
 export function addToHistory(song) {
-    // Deduplicate: find if already in history and remove
-    const filtered = state.playHistory.filter(item => item.song.videoId !== song.videoId);
-    state.setPlayHistory(filtered);
-
-    // Add to top
-    const historyItem = { song, playedAt: new Date().toISOString() };
-    state.playHistory.unshift(historyItem);
-
-    // Limit to 50 items
-    if (state.playHistory.length > 50) {
-        state.playHistory.pop();
+    // Guard: if the most recent item is the same song added within 5s, skip
+    if (state.playHistory.length > 0) {
+        const last = state.playHistory[0];
+        const elapsed = Date.now() - new Date(last.playedAt).getTime();
+        if (last.song.videoId === song.videoId && elapsed < 5000) return;
     }
 
+    // Deduplicate: remove all existing entries of this song
+    const filtered = state.playHistory.filter(item => item.song.videoId !== song.videoId);
+
+    // Add to top, then save
+    const historyItem = { song, playedAt: new Date().toISOString() };
+    filtered.unshift(historyItem);
+
+    // Limit to 50 items
+    if (filtered.length > 50) filtered.pop();
+
+    state.setPlayHistory(filtered);
     localStorage.setItem('playHistory', JSON.stringify(state.playHistory));
 }
 

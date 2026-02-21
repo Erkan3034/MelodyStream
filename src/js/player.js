@@ -149,10 +149,24 @@ export function playSong(song) {
                         // Start or restart progress interval
                         if (state.progressInterval) clearInterval(state.progressInterval);
                         state.setProgressInterval(setInterval(updateProgress, 500));
+
+                        // Sync silent audio & wake lock every time YT reports PLAYING
+                        // (covers resume-after-background, headphone reconnect, etc.)
+                        enableBackgroundPlayback();
+                        requestWakeLock();
+                        updateMediaSessionPlaybackState(true);
+
                     } else if (event.data === YT.PlayerState.PAUSED) {
-                        state.setIsPlaying(false);
-                        updatePlayPauseButtons();
-                        if (state.progressInterval) clearInterval(state.progressInterval);
+                        // Only mark as paused if the page is visible (background hide fires PAUSED)
+                        if (!document.hidden) {
+                            state.setIsPlaying(false);
+                            updatePlayPauseButtons();
+                            if (state.progressInterval) clearInterval(state.progressInterval);
+                            updateMediaSessionPlaybackState(false);
+                        }
+                    } else if (event.data === YT.PlayerState.BUFFERING) {
+                        // Keep silentAudio alive during buffering stalls
+                        enableBackgroundPlayback();
                     }
                 },
                 onError: (event) => {

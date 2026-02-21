@@ -55,9 +55,41 @@ export function updateRecommendedMusicGrid() {
   });
 }
 
+// ─── Cache helpers ───────────────────────────────────────────
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 saat
+
+function getCached(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL_MS) { localStorage.removeItem(key); return null; }
+    return data;
+  } catch { return null; }
+}
+
+function setCache(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch { /* quota full */ }
+}
+
 export async function loadRecommendedMusic() {
   if (!state.YOUTUBE_API_KEY) {
     console.warn('YouTube API key bulunamadı!');
+    return;
+  }
+
+  // ── Memory guard: already loaded this session ──
+  if (state.recommendedMusic.length > 0) {
+    updateRecommendedMusicGrid();
+    return;
+  }
+
+  // ── 24-hour localStorage cache ──
+  const cached = getCached('yt_recommended');
+  if (cached) {
+    state.setRecommendedMusic(cached);
+    updateRecommendedMusicGrid();
+    state.setCurrentSongList(cached);
     return;
   }
 
@@ -65,23 +97,48 @@ export async function loadRecommendedMusic() {
     const grid = document.getElementById('recommendedMusic');
     if (grid) grid.innerHTML = '<div class="loading-spinner visible"></div>';
 
+    // 💡 playlistItems.list = 1 unit vs search.list = 100 units!
+    // Using curated popular Turkish music playlist
+    const TURKISH_MUSIC_PLAYLIST = 'PLNLbHIuMRoPNiHsLT7rD3hom4QsZqLmR0';
     const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&regionCode=TR&maxResults=12&key=${state.YOUTUBE_API_KEY}&q=türkçe müzik 2026 popüler`
+      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=12&playlistId=${TURKISH_MUSIC_PLAYLIST}&key=${state.YOUTUBE_API_KEY}`
     );
 
-    if (!response.ok) throw new Error('Önerilen müzikler yüklenemedi');
+    let songs = [];
 
-    const data = await response.json();
-    const songs = data.items
-      .filter(item => item.id.videoId)
-      .map(item => ({
-        videoId: item.id.videoId,
-        title: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.high.url,
-        channelTitle: item.snippet.channelTitle,
-        type: 'youtube',
-      }));
+    if (response.ok) {
+      const data = await response.json();
+      songs = data.items
+        .filter(item => item.snippet.resourceId?.videoId)
+        .map(item => ({
+          videoId: item.snippet.resourceId.videoId,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url || '',
+          channelTitle: item.snippet.channelTitle,
+          type: 'youtube',
+        }));
+    }
 
+    // Fallback: if playlist fails, try a search (last resort, 100 units)
+    if (songs.length === 0) {
+      const fallback = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&regionCode=TR&maxResults=12&key=${state.YOUTUBE_API_KEY}&q=türkçe müzik 2026 popüler`
+      );
+      if (fallback.ok) {
+        const data = await fallback.json();
+        songs = data.items
+          .filter(item => item.id.videoId)
+          .map(item => ({
+            videoId: item.id.videoId,
+            title: item.snippet.title,
+            thumbnail: item.snippet.thumbnails.high.url,
+            channelTitle: item.snippet.channelTitle,
+            type: 'youtube',
+          }));
+      }
+    }
+
+    setCache('yt_recommended', songs);
     state.setRecommendedMusic(songs);
     updateRecommendedMusicGrid();
     state.setCurrentSongList(songs);
@@ -95,21 +152,56 @@ export async function loadRecommendedMusic() {
 export async function loadPopularPlaylists() {
   if (!state.YOUTUBE_API_KEY) return;
 
+  // ── Memory guard ──
+  if (state.popularPlaylists.length > 0) {
+    renderPopularPlaylists();
+    return;
+  }
+
+  // ── 24-hour cache ──
+  const cached = getCached('yt_playlists');
+  if (cached) {
+    state.setPopularPlaylists(cached);
+    renderPopularPlaylists();
+    return;
+  }
+
   try {
-    const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=playlist&q=türkçe pop müzik mix 2026&maxResults=6&key=${state.YOUTUBE_API_KEY}`
-    );
+    // Use hardcoded curated playlist IDs instead of search (1 unit vs 100 units per call!)
+    const CURATED_PLAYLISTS = [
+      { id: 'PLNLbHIuMRoPNiHsLT7rD3hom4QsZqLmR0', title: 'Türkçe Pop Hit', channelTitle: 'MelodyStream' },
+      { id: 'PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI', title: 'En İyi Türk Müziği', channelTitle: 'MelodyStream' },
+      { id: 'PL9EBBA1B9FA5F5F77', title: 'Türkçe Slow Şarkılar', channelTitle: 'YouTube Music' },
+      { id: 'PLNLbHIuMRoPM43MjFCpCJqB3VTasMDX1j', title: 'Türkçe Rock', channelTitle: 'MelodyStream' },
+      { id: 'PL6D6C5F4D4E0D32BD', title: 'Türkçe R&B', channelTitle: 'YouTube Music' },
+      { id: 'PLynG8gQD-n8BMplEVZVsoYlaRgqzG1qc4', title: 'Yeni Türkçe Müzik', channelTitle: 'MelodyStream' },
+    ];
 
-    if (!response.ok) return;
+    // Get thumbnails for each playlist using channels (1 unit each, cheap)
+    const playlists = [];
+    for (const pl of CURATED_PLAYLISTS) {
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${pl.id}&key=${state.YOUTUBE_API_KEY}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.items?.length > 0) {
+          const item = data.items[0];
+          playlists.push({
+            id: pl.id,
+            title: item.snippet.title,
+            thumbnail: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url || '',
+            channelTitle: item.snippet.channelTitle
+          });
+        } else {
+          // If playlist not found, still add with fallback
+          playlists.push({ ...pl, thumbnail: '/favicon.svg' });
+        }
+      }
+    }
 
-    const data = await response.json();
-    state.setPopularPlaylists(data.items.map(item => ({
-      id: item.id.playlistId,
-      title: item.snippet.title,
-      thumbnail: item.snippet.thumbnails.high.url,
-      channelTitle: item.snippet.channelTitle,
-    })));
-
+    setCache('yt_playlists', playlists);
+    state.setPopularPlaylists(playlists);
     renderPopularPlaylists();
   } catch (err) {
     console.error('Popüler playlistler yüklenemedi:', err);
@@ -164,14 +256,39 @@ async function loadPlaylistDetail(playlistId) {
       <div class="section">
         <div class="section-header">
           <h2>🎵 Playlist</h2>
+          <span style="color:var(--ms-text-secondary);font-size:13px">${songs.length} şarkı</span>
         </div>
-        <div class="music-grid" id="playlistDetail"></div>
+        <div class="search-results-list" id="playlistDetail"></div>
       </div>
     `;
 
-    const grid = document.getElementById('playlistDetail');
-    songs.forEach(song => {
-      grid.appendChild(createMusicCard(song));
+    const list = document.getElementById('playlistDetail');
+    import('./favorites.js').then(({ isFavorite, toggleFavorite }) => {
+      songs.forEach(song => {
+        const item = document.createElement('div');
+        item.className = 'search-list-item';
+        const favActive = isFavorite(song.videoId) ? 'active' : '';
+        item.innerHTML = `
+          <img src="${song.thumbnail || '/favicon.svg'}" alt="${song.title}" loading="lazy">
+          <div class="search-list-info">
+            <h3>${song.title}</h3>
+            <p>${song.channelTitle || 'Bilinmeyen Sanatçı'}</p>
+          </div>
+          <button class="favorite-btn ${favActive}" aria-label="Favori">
+            <i class="fas fa-heart"></i>
+          </button>
+        `;
+        item.onclick = () => import('./navigation.js').then(nav => nav.showSongDetail(song));
+        const favBtn = item.querySelector('.favorite-btn');
+        if (favBtn) {
+          favBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleFavorite(song);
+            favBtn.classList.toggle('active', isFavorite(song.videoId));
+          };
+        }
+        list.appendChild(item);
+      });
     });
 
     state.setCurrentSongList(songs);
@@ -211,7 +328,7 @@ export function renderHomeSection() {
         <h2>❤️ Favorilerin</h2>
         <span class="see-all" id="seeAllFavorites">Tümünü Gör</span>
       </div>
-      <div class="music-grid" id="favoriteMusic"></div>
+      <div class="search-results-list" id="favoriteMusic"></div>
     </div>
 
     <!-- Popular Playlists -->

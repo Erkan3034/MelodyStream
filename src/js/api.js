@@ -5,7 +5,10 @@
 
 import * as state from './state.js';
 
-const API_BASE = '/api';
+const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE = IS_LOCAL
+    ? 'https://melodystream-app.netlify.app/api'
+    : '/api';
 
 async function request(endpoint, options = {}) {
     const token = localStorage.getItem('ms_auth_token');
@@ -94,5 +97,27 @@ export const api = {
             method: 'POST',
             body: JSON.stringify({ name })
         });
-    }
+    },
+
+    async addSongToPlaylist(playlistId, song) {
+        return request('/playlists', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'addSong',
+                playlistId,
+                videoId: song.videoId,
+                title: song.title,
+                thumbnail: song.thumbnail,
+                channelTitle: song.channelTitle,
+            })
+        });
+    },
+
+    async deletePlaylist(playlistId, videoId = null) {
+        const body = videoId ? { playlistId, videoId } : { playlistId };
+        return request('/playlists', {
+            method: 'DELETE',
+            body: JSON.stringify(body)
+        });
+    },
 };

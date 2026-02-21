@@ -21,9 +21,11 @@ export let currentView = 'home';
 export let isShuffleOn = false;
 export let isRepeatOn = false;
 
-// Data
-export let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-export let playlists = JSON.parse(localStorage.getItem('playlists')) || [];
+// Data — favorites are empty on startup if user is logged in (will be loaded from backend)
+// This prevents duplicates caused by localStorage + backend both filling the list
+const _hasToken = !!localStorage.getItem('ms_auth_token');
+export let favorites = _hasToken ? [] : (JSON.parse(localStorage.getItem('favorites')) || []);
+export let playlists = _hasToken ? [] : (JSON.parse(localStorage.getItem('playlists')) || []);
 export let playHistory = JSON.parse(localStorage.getItem('playHistory')) || [];
 export let recommendedMusic = [];
 export let lastSearchResults = [];

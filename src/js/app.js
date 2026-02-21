@@ -89,6 +89,9 @@ function initNavItems() {
                 case 'history':
                     showPlayHistory();
                     break;
+                case 'profile':
+                    renderProfileSection();
+                    break;
             }
 
             // Close sidebar on mobile

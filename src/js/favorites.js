@@ -50,7 +50,7 @@ export async function loadFavoritesFromBackend() {
     if (!state.user) return;
     try {
         const backendFavs = await api.getFavorites();
-        // Merge: backend is the source of truth when logged in
+        // Backend is the single source of truth — replace local state entirely
         const mapped = backendFavs.map(f => ({
             videoId: f.video_id,
             title: f.title,
@@ -58,8 +58,17 @@ export async function loadFavoritesFromBackend() {
             channelTitle: f.channel_title,
             type: 'youtube'
         }));
-        state.setFavorites(mapped);
-        localStorage.setItem('favorites', JSON.stringify(mapped));
+
+        // Deduplicate by videoId (safety net)
+        const seen = new Set();
+        const deduped = mapped.filter(f => {
+            if (seen.has(f.videoId)) return false;
+            seen.add(f.videoId);
+            return true;
+        });
+
+        state.setFavorites(deduped);
+        localStorage.setItem('favorites', JSON.stringify(deduped));
         updateFavoritesGrid();
     } catch (err) {
         console.warn('Backend favorileri yüklenemedi, yerel kullanılıyor:', err);
@@ -67,23 +76,40 @@ export async function loadFavoritesFromBackend() {
 }
 
 export function updateFavoritesGrid() {
-    const grid = document.getElementById('favoriteMusic');
-    if (!grid) return;
+    const list = document.getElementById('favoriteMusic');
+    if (!list) return;
 
-    grid.innerHTML = '';
+    list.innerHTML = '';
     if (state.favorites.length === 0) {
-        grid.innerHTML = `
-      <div class="empty-state" style="grid-column: 1 / -1;">
+        list.innerHTML = `
+      <div class="empty-state">
         <i class="fas fa-heart"></i>
         <p>Henüz favori şarkın yok</p>
       </div>
     `;
     } else {
-        import('./ui.js').then(ui => {
-            state.favorites.forEach(song => {
-                const card = ui.createMusicCard(song);
-                grid.appendChild(card);
-            });
+        state.favorites.forEach(song => {
+            const item = document.createElement('div');
+            item.className = 'search-list-item';
+            item.innerHTML = `
+                <img src="${song.thumbnail || '/favicon.svg'}" alt="${song.title}" loading="lazy">
+                <div class="search-list-info">
+                    <h3>${song.title}</h3>
+                    <p>${song.channelTitle || 'Bilinmeyen Sanatçı'}</p>
+                </div>
+                <button class="favorite-btn active" aria-label="Favori">
+                    <i class="fas fa-heart"></i>
+                </button>
+            `;
+            item.onclick = () => import('./navigation.js').then(nav => nav.showSongDetail(song));
+            const favBtn = item.querySelector('.favorite-btn');
+            if (favBtn) {
+                favBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(song);
+                };
+            }
+            list.appendChild(item);
         });
     }
 
@@ -100,8 +126,9 @@ export function renderFavoritesSection() {
     <div class="section">
       <div class="section-header">
         <h2>❤️ Favorilerin</h2>
+        <span style="color:var(--ms-text-secondary);font-size:13px">${state.favorites.length} şarkı</span>
       </div>
-      <div class="music-grid" id="favoriteMusic"></div>
+      <div class="search-results-list" id="favoriteMusic"></div>
     </div>
   `;
     updateFavoritesGrid();

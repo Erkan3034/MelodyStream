@@ -6,6 +6,7 @@
 import * as state from './state.js';
 import { api } from './api.js';
 import { loadFavoritesFromBackend } from './favorites.js';
+import { loadPlaylistsFromBackend, renderPlaylistsSidebar } from './playlist.js';
 
 export function renderProfileSection() {
     const mainContent = document.querySelector('.main-content');
@@ -21,43 +22,159 @@ export function renderProfileSection() {
 }
 
 function renderUserProfile(container) {
+    // \u2500\u2500 Compute stats from local state \u2500\u2500
+    const totalSongs = state.playHistory.length;
+    const estimatedMinutes = Math.round(totalSongs * 3.5); // avg 3.5 min/song
+    const hours = Math.floor(estimatedMinutes / 60);
+    const mins = estimatedMinutes % 60;
+    const listenTime = hours > 0 ? `${hours}s ${mins}dk` : `${mins}dk`;
+
+    // Top artists from history
+    const artistCount = {};
+    state.playHistory.forEach(h => {
+        const a = h.song.channelTitle || 'Bilinmeyen';
+        artistCount[a] = (artistCount[a] || 0) + 1;
+    });
+    const topArtists = Object.entries(artistCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+    // Achievements
+    const achievements = [];
+    if (totalSongs >= 1) achievements.push({ icon: '🎵', label: 'İlk Şarkı', desc: 'İlk müziğini dinledin!' });
+    if (totalSongs >= 10) achievements.push({ icon: '🎧', label: 'Müzik Keyfi', desc: '10+ şarkı dinledin' });
+    if (totalSongs >= 50) achievements.push({ icon: '🔥', label: 'Müzik Delisi', desc: '50+ şarkı dinledin' });
+    if (totalSongs >= 100) achievements.push({ icon: '🏆', label: 'Efsane', desc: '100+ şarkı dinledin!' });
+    if (state.favorites.length >= 1) achievements.push({ icon: '❤️', label: 'İlk Favori', desc: 'İlk favorini ekledin' });
+    if (state.favorites.length >= 10) achievements.push({ icon: '💎', label: 'Koleksiyoncu', desc: '10+ favori şarkın var' });
+    if (state.playlists.length >= 1) achievements.push({ icon: '📋', label: 'DJ Başlangıç', desc: 'İlk listeni oluşturdun' });
+    if (state.playlists.length >= 3) achievements.push({ icon: '🎼', label: 'Playlist Ustası', desc: '3+ liste oluşturdun' });
+    if (achievements.length === 0) achievements.push({ icon: '🌱', label: 'Yeni Üye', desc: 'Müzik yolculuğuna hoş geldin!' });
+
+    // Recent activity (last 5)
+    const recentActivity = state.playHistory.slice(0, 5);
+
+    // Email display name
+    const displayName = state.user.email.split('@')[0];
+
     container.innerHTML = `
-        <div class="section profile-section">
-            <div class="section-header">
-                <h2>👤 Profilim</h2>
-            </div>
-            <div class="profile-card">
-                <div class="profile-avatar">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-                <div class="profile-info">
-                    <p class="profile-email">${state.user.email}</p>
-                    <p class="profile-since">MelodyStream Üyesi</p>
-                </div>
-                <button id="logoutBtn" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Çıkış Yap
-                </button>
-            </div>
-            <div class="profile-stats">
-                <div class="profile-stat">
-                    <i class="fas fa-heart"></i>
-                    <span>${state.favorites.length} Favori</span>
-                </div>
-                <div class="profile-stat">
-                    <i class="fas fa-list"></i>
-                    <span>${state.playlists.length} Liste</span>
-                </div>
-                <div class="profile-stat">
-                    <i class="fas fa-clock"></i>
-                    <span>${state.playHistory.length} Şarkı Dinlendi</span>
+        <div class="profile-page">
+
+            <!-- Header Card -->
+            <div class="profile-hero">
+                <div class="profile-hero-bg"></div>
+                <div class="profile-hero-content">
+                    <div class="profile-avatar-large">
+                        <span>${displayName.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div class="profile-hero-info">
+                        <h2 class="profile-display-name">${displayName}</h2>
+                        <p class="profile-email-small">${state.user.email}</p>
+                        <span class="profile-badge-label">MelodyStream Üyesi</span>
+                    </div>
+                    <button id="logoutBtn" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Çıkış
+                    </button>
                 </div>
             </div>
+
+            <!-- Stats Row -->
+            <div class="profile-stats-row">
+                <div class="profile-stat-card">
+                    <div class="profile-stat-icon" style="color:#1db954">🎵</div>
+                    <div class="profile-stat-value">${totalSongs}</div>
+                    <div class="profile-stat-label">Şarkı Dinlendi</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-icon">⏱️</div>
+                    <div class="profile-stat-value">${listenTime}</div>
+                    <div class="profile-stat-label">Dinleme Süresi</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-icon" style="color:#e91e63">❤️</div>
+                    <div class="profile-stat-value">${state.favorites.length}</div>
+                    <div class="profile-stat-label">Favori</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-icon" style="color:#ff9800">📋</div>
+                    <div class="profile-stat-value">${state.playlists.length}</div>
+                    <div class="profile-stat-label">Liste</div>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="section">
+                <div class="section-header"><h2>🏅 Başarılar</h2></div>
+                <div class="achievements-grid">
+                    ${achievements.map(a => `
+                        <div class="achievement-card">
+                            <span class="achievement-icon">${a.icon}</span>
+                            <div class="achievement-info">
+                                <strong>${a.label}</strong>
+                                <span>${a.desc}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Top Artists -->
+            ${topArtists.length > 0 ? `
+            <div class="section">
+                <div class="section-header"><h2>🎤 En Çok Dinlediğin Sanatçılar</h2></div>
+                <div class="top-artists-list">
+                    ${topArtists.map(([artist, count], i) => `
+                        <div class="top-artist-item">
+                            <span class="top-artist-rank">#${i + 1}</span>
+                            <div class="top-artist-bar-wrap">
+                                <div class="top-artist-name">${artist}</div>
+                                <div class="top-artist-bar">
+                                    <div class="top-artist-fill" style="width:${Math.round((count / topArtists[0][1]) * 100)}%"></div>
+                                </div>
+                            </div>
+                            <span class="top-artist-count">${count} şarkı</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>` : ''}
+
+            <!-- Recent Activity -->
+            ${recentActivity.length > 0 ? `
+            <div class="section">
+                <div class="section-header"><h2>🕐 Son Aktivite</h2></div>
+                <div class="recent-activity-list">
+                    ${recentActivity.map(item => {
+        const d = new Date(item.playedAt);
+        const timeStr = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+        return `
+                        <div class="activity-item" data-video-id="${item.song.videoId}">
+                            <img src="${item.song.thumbnail || '/favicon.svg'}" alt="${item.song.title}" loading="lazy">
+                            <div class="activity-info">
+                                <strong>${item.song.title}</strong>
+                                <span>${item.song.channelTitle || 'Bilinmeyen'}</span>
+                            </div>
+                            <span class="activity-time">${dateStr} ${timeStr}</span>
+                        </div>`;
+    }).join('')}
+                </div>
+            </div>` : ''}
+
         </div>
     `;
 
+    // Logout
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
         api.logout();
         renderProfileSection();
+    });
+
+    // Click on activity to play
+    container.querySelectorAll('.activity-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const h = recentActivity.find(a => a.song.videoId === el.dataset.videoId);
+            if (h) import('./navigation.js').then(nav => nav.showSongDetail(h.song));
+        });
     });
 }
 
@@ -152,6 +269,7 @@ function initLoginForm() {
         try {
             await api.login(email, password);
             await loadFavoritesFromBackend();
+            await loadPlaylistsFromBackend();
             renderProfileSection();
         } catch (err) {
             errorEl.textContent = err.message || 'Giriş başarısız';
@@ -192,6 +310,7 @@ function initRegisterForm() {
         try {
             await api.register(email, password);
             await loadFavoritesFromBackend();
+            await loadPlaylistsFromBackend();
             renderProfileSection();
         } catch (err) {
             errorEl.textContent = err.message || 'Kayıt başarısız';
@@ -217,6 +336,9 @@ export function restoreSession() {
         }
         // Restore minimal user state from token
         state.setUser({ id: payload.userId, email: payload.email || '' });
+        // Sync data from backend in background
+        loadFavoritesFromBackend().catch(() => { });
+        loadPlaylistsFromBackend().then(() => renderPlaylistsSidebar()).catch(() => { });
     } catch {
         localStorage.removeItem('ms_auth_token');
     }
