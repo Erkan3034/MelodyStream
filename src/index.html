@@ -76,8 +76,8 @@
         <div class="now-playing">
             <img id="currentThumbnail" class="player-album-art" src="/favicon.svg" alt="">
             <div class="player-song-info">
-                <div class="player-song-title" id="currentSongName">Şarkı seçin...</div>
-                <div class="player-song-artist" id="currentArtist">—</div>
+                <div class="player-song-title current-song-name" id="currentSongName">Şarkı seçin...</div>
+                <div class="player-song-artist current-artist" id="currentArtist">—</div>
             </div>
         </div>
 
@@ -115,7 +115,9 @@
         <div class="sd-header">
             <button class="sd-header-btn sd-back-btn"><i class="fas fa-chevron-down"></i></button>
             <span class="sd-header-title" id="detailHeaderTitle">—</span>
-            <div class="sd-header-btn" style="visibility:hidden"><i class="fas fa-chevron-down"></i></div>
+            <button id="detailAddToPlaylistBtn" class="sd-header-btn" title="Çalma Listesine Ekle">
+                <i class="fas fa-plus"></i>
+            </button>
         </div>
 
         <!-- Content -->
@@ -124,8 +126,8 @@
 
             <div class="sd-song-info">
                 <div class="sd-song-text">
-                    <h3 id="detailSongName">—</h3>
-                    <p id="detailArtist">—</p>
+                    <h3 id="detailSongName" class="current-song-name">—</h3>
+                    <p id="detailArtist" class="current-artist">—</p>
                 </div>
                 <button class="sd-fav-btn" id="detailFavoriteBtn">
                     <i class="fas fa-heart"></i>

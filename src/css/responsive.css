@@ -67,7 +67,7 @@
     }
 
     .player-bar .add-to-playlist-btn {
-        display: none !important;
+        display: flex;
     }
 
     .player-bar .now-playing {

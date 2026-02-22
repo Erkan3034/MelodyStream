@@ -78,10 +78,21 @@ export function playSong(song) {
 
     state.setCurrentSong(song);
 
-    // Update UI
+    // Update UI (Multi-target sync)
     document.querySelectorAll('.current-song-name').forEach(el => el.textContent = song.title);
     document.querySelectorAll('.current-artist').forEach(el => el.textContent = song.channelTitle || 'Bilinmeyen Sanatçı');
-    document.querySelectorAll('.current-thumbnail').forEach(el => el.src = song.thumbnail);
+
+    // Update Thumbnails
+    const thumbnails = [
+        document.getElementById('currentThumbnail'),
+        document.getElementById('detailThumbnail')
+    ];
+    thumbnails.forEach(img => { if (img) img.src = song.thumbnail; });
+
+    // Show Add-to-Playlist buttons
+    document.querySelectorAll('#addToPlaylistBtn, #detailAddToPlaylistBtn').forEach(btn => {
+        if (btn) btn.style.display = 'flex';
+    });
 
     if (!state.youtubePlayer) {
         const playerContainer = document.createElement('div');

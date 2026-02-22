@@ -161,6 +161,9 @@ function initPlayerBarControls() {
     const addToPlaylistBtn = document.getElementById('addToPlaylistBtn');
     if (addToPlaylistBtn) addToPlaylistBtn.addEventListener('click', openAddToPlaylistModal);
 
+    const detailAddToPlaylistBtn = document.getElementById('detailAddToPlaylistBtn');
+    if (detailAddToPlaylistBtn) detailAddToPlaylistBtn.addEventListener('click', openAddToPlaylistModal);
+
     // Player bar click → show detail
     const playerBar = document.getElementById('playerBar');
     if (playerBar) {
