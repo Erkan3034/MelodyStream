@@ -72,6 +72,10 @@ function formatTime(seconds) {
 export function playSong(song) {
     if (!state.isYouTubeApiReady) return;
 
+    // Pre-warm the background audio context immediately to reduce OS throttling latency
+    enableBackgroundPlayback();
+    requestWakeLock();
+
     if (state.youtubePlayer) {
         state.youtubePlayer.stopVideo();
     }
@@ -158,8 +162,8 @@ setInterval(() => {
     if (state.isPlaying && state.youtubePlayer && state.playerReady) {
         try {
             const ps = state.youtubePlayer.getPlayerState();
-            // In the background, YT often stutters to PAUSED (2) or stays UNSTARTED (-1)
-            if ((ps === 2 || ps === -1 || ps === 3) && document.hidden) {
+            // In the background, YT often stutters to PAUSED (2), stays UNSTARTED (-1), or gets stuck BUFFERING (3)
+            if (document.hidden && (ps === 2 || ps === -1 || ps === 3)) {
                 console.debug('[Heartbeat] Resuming background playback...');
                 state.youtubePlayer.playVideo();
                 enableBackgroundPlayback();
@@ -167,7 +171,7 @@ setInterval(() => {
             }
         } catch (e) { }
     }
-}, 1000); // 1s frequency for high-importance background play
+}, 1000);
 
 export function togglePlayPause() {
     if (!state.youtubePlayer || !state.playerReady) return;

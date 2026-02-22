@@ -34,7 +34,7 @@ function ensureSilentAudio() {
     if (silentAudio) return;
     silentAudio = new Audio(SILENT_MP3);
     silentAudio.loop = true;
-    silentAudio.volume = 0.001; // Extremely quiet but not muted
+    silentAudio.volume = 0.05; // Slightly higher for OS to detect active audio
 
     // Recovery if the audio stalls or the OS pauses it
     silentAudio.addEventListener('pause', () => {
@@ -45,8 +45,8 @@ function ensureSilentAudio() {
 
     // Pulse: nudge the main thread every time the loop repeats
     silentAudio.addEventListener('timeupdate', () => {
-        if (silentAudio.currentTime > 1.5) {
-            silentAudio.currentTime = 0; // Force loop nudge
+        if (silentAudio.currentTime > 1.8) {
+            silentAudio.currentTime = 0; // Force loop nudge to keep main thread alive
         }
     });
 }
@@ -136,12 +136,21 @@ export function updateMediaSession(song, handlers) {
         ],
     });
 
-    // Register handlers once and keep them
+    // Register all standard handlers to ensure full OS media player controls
     const actionHandlers = [
-        ['play', handlers.onPlay],
-        ['pause', handlers.onPause],
-        ['previoustrack', handlers.onPrevious],
-        ['nexttrack', handlers.onNext],
+        ['play', () => handlers.onPlay?.()],
+        ['pause', () => handlers.onPause?.()],
+        ['previoustrack', () => handlers.onPrevious?.()],
+        ['nexttrack', () => handlers.onNext?.()],
+        ['stop', () => handlers.onPause?.()], // Standard stop as pause
+        ['seekbackward', (details) => {
+            const skipTime = details.seekOffset || 10;
+            handlers.onSeek?.(Math.max(0, state.youtubePlayer?.getCurrentTime() - skipTime));
+        }],
+        ['seekforward', (details) => {
+            const skipTime = details.seekOffset || 10;
+            handlers.onSeek?.(state.youtubePlayer?.getCurrentTime() + skipTime);
+        }],
         ['seekto', (details) => {
             handlers.onSeek?.(details.seekTime);
             updateMediaSessionPlaybackState(true);
@@ -151,7 +160,9 @@ export function updateMediaSession(song, handlers) {
     actionHandlers.forEach(([action, handler]) => {
         try {
             navigator.mediaSession.setActionHandler(action, handler);
-        } catch (e) { }
+        } catch (e) {
+            console.debug(`[MediaSession] Action ${action} not supported.`);
+        }
     });
 
     updateMediaSessionPlaybackState(state.isPlaying);
