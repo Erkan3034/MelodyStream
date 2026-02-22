@@ -1,6 +1,6 @@
-// ── Silent audio keep-alive ────────────────────────────────────
-// Proactive strategy: start early, never stop, and pulse to keep main thread alive.
+// ── Media Session & Background Playback Stability ─────────────
 import * as state from './state.js';
+
 const SILENT_MP3 = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6v////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAQKAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
 
 let silentAudio = null;
@@ -9,9 +9,50 @@ let _resumeAfterHide = false;
 let _sessionHeartbeat = null;
 let _isInitialized = false;
 
+// Global handler bridge to ensure registration is persistent
+let _currentHandlers = {
+    onPlay: null,
+    onPause: null,
+    onNext: null,
+    onPrevious: null,
+    onSeek: null
+};
+
+/**
+ * Register global handlers once. 
+ * This ensures the buttons are present in the OS UI even if track changes.
+ */
+function registerMediaHandlers() {
+    if (!('mediaSession' in navigator)) return;
+
+    const actionHandlers = [
+        ['play', () => _currentHandlers.onPlay?.()],
+        ['pause', () => _currentHandlers.onPause?.()],
+        ['previoustrack', () => _currentHandlers.onPrevious?.()],
+        ['nexttrack', () => _currentHandlers.onNext?.()],
+        ['stop', () => _currentHandlers.onPause?.()],
+        ['seekbackward', (details) => {
+            const skip = details.seekOffset || 10;
+            _currentHandlers.onSeek?.(Math.max(0, (state.youtubePlayer?.getCurrentTime() || 0) - skip));
+        }],
+        ['seekforward', (details) => {
+            const skip = details.seekOffset || 10;
+            _currentHandlers.onSeek?.((state.youtubePlayer?.getCurrentTime() || 0) + skip);
+        }],
+        ['seekto', (details) => _currentHandlers.onSeek?.(details.seekTime)]
+    ];
+
+    actionHandlers.forEach(([action, handler]) => {
+        try {
+            navigator.mediaSession.setActionHandler(action, handler);
+        } catch (e) {
+            console.debug(`[MediaSession] Action ${action} not supported.`);
+        }
+    });
+}
+
 /**
  * Initializes the silent audio keep-alive. 
- * MUST be called on a user gesture (first click/touch).
  */
 export function initBackgroundPlaybackHook() {
     if (_isInitialized) return;
@@ -20,9 +61,9 @@ export function initBackgroundPlaybackHook() {
     const startAudio = () => {
         silentAudio.play().catch(() => { });
         _isInitialized = true;
-        console.debug('[MediaSession] Proactive heartbeat started.');
+        registerMediaHandlers(); // Initial registration
+        console.debug('[MediaSession] Background hooks initialized.');
 
-        // Remove listeners
         document.removeEventListener('click', startAudio);
         document.removeEventListener('touchstart', startAudio);
     };
@@ -37,21 +78,16 @@ function ensureSilentAudio() {
     silentAudio.loop = true;
     silentAudio.volume = 0.05;
 
-    // Recovery if the audio stalls or the OS pauses it
     silentAudio.addEventListener('pause', () => {
-        if (state.isPlaying || _isInitialized) {
-            // Only resume if we aren't explicitly paused by user
+        if (state.isPlaying) {
             setTimeout(() => {
-                if (state.isPlaying || _isInitialized) silentAudio.play().catch(() => { });
-            }, 500);
+                if (state.isPlaying) silentAudio.play().catch(() => { });
+            }, 1000);
         }
     });
 
-    // Pulse: nudge the main thread every time the loop repeats
     silentAudio.addEventListener('timeupdate', () => {
-        if (silentAudio.currentTime > 2.0) {
-            silentAudio.currentTime = 0;
-        }
+        if (silentAudio.currentTime > 2.0) silentAudio.currentTime = 0;
     });
 }
 
@@ -59,111 +95,46 @@ export function enableBackgroundPlayback() {
     ensureSilentAudio();
     if (silentAudio.paused) {
         silentAudio.play().catch(() => {
+            _isInitialized = false;
             initBackgroundPlaybackHook();
         });
     }
 }
 
-export function disableBackgroundPlayback() {
-    // Stop the silent audio only if we are truly ending the session
-    // For PWA, it's better to keep it paused but not destroyed
-}
-
-// ── WakeLock ───────────────────────────────────────────────────
 export async function requestWakeLock() {
     if (!('wakeLock' in navigator)) return;
     try {
-        if (wakeLock) { try { await wakeLock.release(); } catch { } }
+        if (wakeLock) await wakeLock.release();
         wakeLock = await navigator.wakeLock.request('screen');
-        wakeLock.addEventListener('release', () => {
-            wakeLock = null;
-            if (state.isPlaying) setTimeout(() => { if (state.isPlaying) requestWakeLock(); }, 1000);
-        });
     } catch { }
 }
 
 export function releaseWakeLock() {
     if (wakeLock) {
-        wakeLock.release().catch(() => { });
-        wakeLock = null;
+        wakeLock.release().then(() => wakeLock = null).catch(() => { });
     }
 }
 
-// ── Visibility / Lifecycle ────────────────────────────────────
-function handleVisibilityChange() {
-    if (document.hidden) {
-        if (state.isPlaying) {
-            _resumeAfterHide = true;
-            enableBackgroundPlayback();
-        }
-    } else {
-        if (state.isPlaying) {
-            _resumeAfterHide = false;
-            // Sync up YouTube player if it drifted
-            setTimeout(() => {
-                const player = state.youtubePlayer;
-                if (player && state.playerReady) {
-                    const ps = player.getPlayerState?.();
-                    if (ps === 2 || ps === -1) player.playVideo();
-                }
-            }, 300);
-        }
-    }
-}
-
-document.addEventListener('visibilitychange', handleVisibilityChange);
-
-// ── Media Session metadata / controls ─────────────────────────
-let _lastMetadataUsed = null;
-
+// ── Metadata & Session Management ──────────────────────────────
 export function updateMediaSession(song, handlers) {
     if (!('mediaSession' in navigator)) return;
 
-    // Register all standard handlers immediately and persistently
-    const actionHandlers = [
-        ['play', () => handlers.onPlay?.()],
-        ['pause', () => handlers.onPause?.()],
-        ['previoustrack', () => handlers.onPrevious?.()],
-        ['nexttrack', () => handlers.onNext?.()],
-        ['stop', () => handlers.onPause?.()],
-        ['seekbackward', (details) => {
-            const skipTime = details.seekOffset || 10;
-            handlers.onSeek?.(Math.max(0, state.youtubePlayer?.getCurrentTime() - skipTime));
-        }],
-        ['seekforward', (details) => {
-            const skipTime = details.seekOffset || 10;
-            handlers.onSeek?.(state.youtubePlayer?.getCurrentTime() + skipTime);
-        }],
-        ['seekto', (details) => {
-            handlers.onSeek?.(details.seekTime);
-        }]
-    ];
+    _currentHandlers = handlers;
+    registerMediaHandlers(); // Refresh handlers on every song
 
-    actionHandlers.forEach(([action, handler]) => {
-        try {
-            navigator.mediaSession.setActionHandler(action, handler);
-        } catch (e) {
-            console.debug(`[MediaSession] Action ${action} not supported.`);
-        }
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title || 'MelodiStream',
+        artist: song.channelTitle || 'Bilinmeyen Sanatçı',
+        album: 'MelodyStream',
+        artwork: [
+            { src: song.thumbnail, sizes: '96x96', type: 'image/jpeg' },
+            { src: song.thumbnail, sizes: '128x128', type: 'image/jpeg' },
+            { src: song.thumbnail, sizes: '192x192', type: 'image/jpeg' },
+            { src: song.thumbnail, sizes: '256x256', type: 'image/jpeg' },
+            { src: song.thumbnail, sizes: '384x384', type: 'image/jpeg' },
+            { src: song.thumbnail, sizes: '512x512', type: 'image/jpeg' },
+        ],
     });
-
-    // Update metadata
-    if (song && _lastMetadataUsed?.videoId !== song.videoId) {
-        _lastMetadataUsed = song;
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: song.title || 'MelodiStream',
-            artist: song.channelTitle || 'Bilinmeyen Sanatçı',
-            album: 'MelodyStream',
-            artwork: [
-                { src: song.thumbnail, sizes: '96x96', type: 'image/jpeg' },
-                { src: song.thumbnail, sizes: '128x128', type: 'image/jpeg' },
-                { src: song.thumbnail, sizes: '192x192', type: 'image/jpeg' },
-                { src: song.thumbnail, sizes: '256x256', type: 'image/jpeg' },
-                { src: song.thumbnail, sizes: '384x384', type: 'image/jpeg' },
-                { src: song.thumbnail, sizes: '512x512', type: 'image/jpeg' },
-            ],
-        });
-    }
 
     updateMediaSessionPlaybackState(state.isPlaying);
     startSessionHeartbeat();
@@ -171,7 +142,6 @@ export function updateMediaSession(song, handlers) {
 
 export function updateMediaSessionPlaybackState(playing) {
     if ('mediaSession' in navigator) {
-        // Only update if current state differs to avoid OS-level flickering
         const newState = playing ? 'playing' : 'paused';
         if (navigator.mediaSession.playbackState !== newState) {
             navigator.mediaSession.playbackState = newState;
@@ -192,32 +162,40 @@ export function updateMediaSessionPosition(currentTime, duration) {
 }
 
 // ── Session Heartbeat ──────────────────────────────────────────
-// Slower, more stable re-sync (3s) to keep OS from killing the session without causing flicker
+// Slower heartbeat to avoid fighting browser/OS throttling
 function startSessionHeartbeat() {
     if (_sessionHeartbeat) return;
     _sessionHeartbeat = setInterval(() => {
         if (state.isPlaying) {
-            // Nudge silent audio
             enableBackgroundPlayback();
 
-            // Periodically re-sync playbackState quietly
+            // Periodically nudge OS to keep session active
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = 'playing';
             }
 
-            // Check if YouTube iframe needs a nudge (pushed here from player.js for stability)
+            // Recovery nudge for YouTube iframe if swallowed by background
             if (document.hidden && state.youtubePlayer && state.playerReady) {
                 const ps = state.youtubePlayer.getPlayerState();
                 if (ps === 2 || ps === -1 || ps === 3) {
+                    console.debug('[Heartbeat] Proactive background resume...');
                     state.youtubePlayer.playVideo();
                 }
             }
         }
-    }, 3000); // 3s is much more stable
+    }, 4000); // 4s for absolute stability
 }
 
 function stopSessionHeartbeat() {
     if (_sessionHeartbeat) {
         clearInterval(_sessionHeartbeat);
+        _sessionHeartbeat = null;
     }
 }
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state.isPlaying) {
+        enableBackgroundPlayback();
+        requestWakeLock();
+    }
+});
