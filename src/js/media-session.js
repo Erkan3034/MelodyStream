@@ -1,5 +1,6 @@
 // ── Media Session & Background Playback Stability ─────────────
 import * as state from './state.js';
+import { minfo, mwarn, merror, mevent, mstate } from './debug-logger.js';
 
 const SILENT_MP3 = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6v////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAQKAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
 
@@ -26,20 +27,40 @@ function registerMediaHandlers() {
     if (!('mediaSession' in navigator)) return;
 
     const actionHandlers = [
-        ['play', () => _currentHandlers.onPlay?.()],
-        ['pause', () => _currentHandlers.onPause?.()],
-        ['previoustrack', () => _currentHandlers.onPrevious?.()],
-        ['nexttrack', () => _currentHandlers.onNext?.()],
-        ['stop', () => _currentHandlers.onPause?.()],
+        ['play', () => {
+            mevent('MEDIASESSION', 'OS → play komutu geldi');
+            _currentHandlers.onPlay?.();
+        }],
+        ['pause', () => {
+            mevent('MEDIASESSION', 'OS → pause komutu geldi');
+            _currentHandlers.onPause?.();
+        }],
+        ['previoustrack', () => {
+            mevent('MEDIASESSION', 'OS → previoustrack komutu geldi');
+            _currentHandlers.onPrevious?.();
+        }],
+        ['nexttrack', () => {
+            mevent('MEDIASESSION', 'OS → nexttrack komutu geldi');
+            _currentHandlers.onNext?.();
+        }],
+        ['stop', () => {
+            mevent('MEDIASESSION', 'OS → stop komutu geldi');
+            _currentHandlers.onPause?.();
+        }],
         ['seekbackward', (details) => {
+            mevent('MEDIASESSION', 'OS → seekbackward komutu geldi');
             const skip = details.seekOffset || 10;
             _currentHandlers.onSeek?.(Math.max(0, (state.youtubePlayer?.getCurrentTime() || 0) - skip));
         }],
         ['seekforward', (details) => {
+            mevent('MEDIASESSION', 'OS → seekforward komutu geldi');
             const skip = details.seekOffset || 10;
             _currentHandlers.onSeek?.((state.youtubePlayer?.getCurrentTime() || 0) + skip);
         }],
-        ['seekto', (details) => _currentHandlers.onSeek?.(details.seekTime)]
+        ['seekto', (details) => {
+            mevent('MEDIASESSION', 'OS → seekto komutu geldi');
+            _currentHandlers.onSeek?.(details.seekTime);
+        }]
     ];
 
     actionHandlers.forEach(([action, handler]) => {
@@ -49,6 +70,7 @@ function registerMediaHandlers() {
             console.debug(`[MediaSession] Action ${action} not supported.`);
         }
     });
+    minfo('MEDIASESSION', "Tüm handler'lar kaydedildi");
 }
 
 /**
@@ -56,10 +78,16 @@ function registerMediaHandlers() {
  */
 export function initBackgroundPlaybackHook() {
     if (_isInitialized) return;
+    minfo('INIT', 'initBackgroundPlaybackHook() called');
     ensureSilentAudio();
 
     const startAudio = () => {
-        silentAudio.play().catch(() => { });
+        silentAudio.play().then(() => {
+            minfo('AUDIO', 'Silent audio başlatıldı');
+        }).catch((e) => {
+            mwarn('AUDIO', 'Silent audio başlatılamadı', e.message);
+        });
+
         _isInitialized = true;
         registerMediaHandlers(); // Initial registration
         console.debug('[MediaSession] Background hooks initialized.');
@@ -80,6 +108,7 @@ function ensureSilentAudio() {
 
     silentAudio.addEventListener('pause', () => {
         if (state.isPlaying) {
+            mwarn('AUDIO', 'Silent audio durdu! state.isPlaying=true → yeniden başlatılıyor');
             setTimeout(() => {
                 if (state.isPlaying) silentAudio.play().catch(() => { });
             }, 1000);
@@ -90,7 +119,11 @@ function ensureSilentAudio() {
 export function enableBackgroundPlayback() {
     ensureSilentAudio();
     if (silentAudio.paused) {
-        silentAudio.play().catch(() => {
+        minfo('AUDIO', 'Silent audio resume deneniyor');
+        silentAudio.play().then(() => {
+            minfo('AUDIO', 'Silent audio resume başarılı');
+        }).catch(() => {
+            mwarn('AUDIO', 'Silent audio resume başarısız');
             _isInitialized = false;
             initBackgroundPlaybackHook();
         });
@@ -102,12 +135,18 @@ export async function requestWakeLock() {
     try {
         if (wakeLock) await wakeLock.release();
         wakeLock = await navigator.wakeLock.request('screen');
-    } catch { }
+        minfo('WAKELOCK', 'WakeLock alındı');
+    } catch (e) {
+        mwarn('WAKELOCK', 'WakeLock alınamadı', e.message);
+    }
 }
 
 export function releaseWakeLock() {
     if (wakeLock) {
-        wakeLock.release().then(() => wakeLock = null).catch(() => { });
+        wakeLock.release().then(() => {
+            minfo('WAKELOCK', 'WakeLock serbest bırakıldı');
+            wakeLock = null;
+        }).catch(() => { });
     }
 }
 
@@ -115,7 +154,10 @@ export function releaseWakeLock() {
 export function updateMediaSession(song, handlers) {
     if (!('mediaSession' in navigator)) return;
 
+    minfo('MEDIASESSION', 'updateMediaSession() called', { title: song.title });
+
     stopSessionHeartbeat();
+    minfo('HEARTBEAT', 'Heartbeat sıfırlandı');
     _sessionHeartbeat = null;
 
     _currentHandlers = handlers;
@@ -137,6 +179,7 @@ export function updateMediaSession(song, handlers) {
 
     updateMediaSessionPlaybackState(state.isPlaying);
     startSessionHeartbeat();
+    minfo('HEARTBEAT', 'Heartbeat başlatıldı');
 }
 
 export function updateMediaSessionPlaybackState(playing) {
@@ -164,8 +207,16 @@ export function updateMediaSessionPosition(currentTime, duration) {
 // Slower heartbeat to avoid fighting browser/OS throttling
 function startSessionHeartbeat() {
     if (_sessionHeartbeat) return;
+    let tickCount = 0;
     _sessionHeartbeat = setInterval(() => {
+        tickCount++;
         if (state.isPlaying) {
+            mstate('HEARTBEAT', `Tick #${tickCount}`, {
+                isPlaying: state.isPlaying,
+                hidden: document.hidden,
+                ytState: state.youtubePlayer ? state.youtubePlayer.getPlayerState() : 'N/A'
+            });
+
             enableBackgroundPlayback();
 
             // Periodically nudge OS to keep session active
@@ -176,9 +227,13 @@ function startSessionHeartbeat() {
             // Recovery nudge for YouTube iframe if swallowed by background
             if (document.hidden && state.youtubePlayer && state.playerReady) {
                 const ps = state.youtubePlayer.getPlayerState();
-                if ((ps === 2 || ps === -1 || ps === 3) && !state.userPaused) {
-                    console.debug('[Heartbeat] Proactive background resume...');
-                    state.youtubePlayer.playVideo();
+                if ((ps === 2 || ps === -1 || ps === 3)) {
+                    if (!state.userPaused) {
+                        mwarn('HEARTBEAT', 'Arka plan recovery: playVideo() çağrılıyor', { ytState: ps });
+                        state.youtubePlayer.playVideo();
+                    } else {
+                        minfo('HEARTBEAT', 'Recovery atlandı — kullanıcı pause etti');
+                    }
                 }
             }
         }
@@ -194,6 +249,7 @@ export function stopSessionHeartbeat() {
 
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && state.isPlaying) {
+        minfo('VISIBILITY', 'Ön plana döndü — enableBackgroundPlayback + requestWakeLock');
         enableBackgroundPlayback();
         requestWakeLock();
     }

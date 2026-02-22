@@ -5,6 +5,7 @@
 
 import * as state from './state.js';
 import { updateMediaSession, enableBackgroundPlayback, updateMediaSessionPlaybackState, updateMediaSessionPosition, requestWakeLock } from './media-session.js';
+import { minfo, mwarn, merror, mevent, mstate, ytStateLabel } from './debug-logger.js';
 
 function updatePlayPauseButtons() {
     const icon = state.isPlaying ? 'fa-pause' : 'fa-play';
@@ -69,9 +70,19 @@ function formatTime(seconds) {
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
-// ... (formatTime stays same)
 export function playSong(song) {
-    if (!state.isYouTubeApiReady) return;
+    minfo('SONG', 'playSong() called', {
+        title: song.title,
+        id: song.videoId,
+        hidden: document.hidden,
+        hasPlayer: !!state.youtubePlayer,
+        ready: state.playerReady
+    });
+
+    if (!state.isYouTubeApiReady) {
+        mwarn('PLAYER', 'playSong() aborting: YT API not ready');
+        return;
+    }
 
     // Pre-warm the background audio context immediately to reduce OS throttling latency
     enableBackgroundPlayback();
@@ -96,6 +107,7 @@ export function playSong(song) {
     });
 
     if (!state.youtubePlayer) {
+        minfo('PLAYER', 'Creating new YT Player instance');
         const playerContainer = document.createElement('div');
         playerContainer.id = 'youtube-player';
         playerContainer.style.display = 'none';
@@ -104,9 +116,10 @@ export function playSong(song) {
         const player = new YT.Player('youtube-player', {
             height: '0', width: '0',
             videoId: song.videoId,
-            playerVars: { controls: 0, autoplay: 1, modestbranding: 1, rel: 0, fs: 0 },
+            playerVars: { controls: 0, autoplay: 1, modestbranding: 1, rel: 0, fs: 0, playsinline: 1 },
             events: {
                 onReady: (event) => {
+                    minfo('PLAYER', 'onReady fired');
                     state.setPlayerReady(true);
                     event.target.playVideo();
                     state.setIsPlaying(true);
@@ -117,25 +130,48 @@ export function playSong(song) {
                     requestWakeLock();
                 },
                 onStateChange: (event) => {
+                    const label = ytStateLabel(event.data);
+                    mstate('YT_STATE', label, {
+                        hidden: document.hidden,
+                        isPlaying: state.isPlaying,
+                        userPaused: state.userPaused
+                    });
+
                     if (event.data === YT.PlayerState.ENDED) {
+                        mevent('PLAYER', 'Song Ended');
                         if (state.isRepeatOn) event.target.playVideo();
                         else playNext();
                     } else if (event.data === YT.PlayerState.PLAYING) {
+                        minfo('PLAYER', 'Playback started');
                         state.setIsPlaying(true);
                         updatePlayPauseButtons();
                         enableBackgroundPlayback();
                         requestWakeLock();
                         updateMediaSessionPlaybackState(true);
                     } else if (event.data === YT.PlayerState.PAUSED) {
+                        if (state.userPaused) {
+                            minfo('PLAYER', 'Paused by user');
+                        } else {
+                            mwarn('PLAYER', 'Browser-forced pause detected!', {
+                                hidden: document.hidden,
+                                ua: navigator.userAgent
+                            });
+                        }
                         state.setIsPlaying(false);
                         updatePlayPauseButtons();
                         updateMediaSessionPlaybackState(false);
+                    } else if (event.data === YT.PlayerState.BUFFERING) {
+                        minfo('PLAYER', 'Buffering...', { hidden: document.hidden });
                     }
+                },
+                onError: (event) => {
+                    merror('PLAYER', 'YouTube error', { code: event.data });
                 }
             }
         });
         state.setYoutubePlayer(player);
     } else {
+        minfo('PLAYER', 'Loading video by ID', { videoId: song.videoId });
         state.youtubePlayer.loadVideoById(song.videoId);
     }
 
@@ -149,17 +185,25 @@ export function playSong(song) {
     });
 }
 
-// ── Background Heartbeat (Removed aggressive flicker source) ──
-// We now rely on the 2s heartbeat in media-session.js which is more stable.
-
 export function togglePlayPause() {
-    if (!state.youtubePlayer || !state.playerReady) return;
+    if (!state.youtubePlayer || !state.playerReady) {
+        mwarn('PLAYER', 'togglePlayPause() aborting: Player not ready');
+        return;
+    }
+
     const ps = state.youtubePlayer.getPlayerState();
+    minfo('PLAYER', 'togglePlayPause() called', {
+        currentState: ytStateLabel(ps),
+        userPaused: state.userPaused
+    });
+
     if (ps === YT.PlayerState.PLAYING) {
+        minfo('PLAYER', '⏸ User requested pause');
         state.setUserPaused(true);
         state.youtubePlayer.pauseVideo();
         state.setIsPlaying(false);
     } else {
+        minfo('PLAYER', '▶ User requested play');
         state.setUserPaused(false);
         state.youtubePlayer.playVideo();
         state.setIsPlaying(true);
@@ -167,43 +211,61 @@ export function togglePlayPause() {
     }
     updatePlayPauseButtons();
 }
-// ... (rest of the functions stay same)
 
 export function playNext() {
-    if (!state.currentSong || !state.currentSongList.length) return;
+    minfo('PLAYER', 'Requesting NEXT song');
+    if (!state.currentSong || !state.currentSongList.length) {
+        mwarn('PLAYER', 'playNext() aborting: No songs available');
+        return;
+    }
 
     let nextSong;
+    const currentIndex = state.currentSongList.findIndex(s => s.videoId === state.currentSong.videoId);
+
     if (state.isShuffleOn) {
         nextSong = state.currentSongList[Math.floor(Math.random() * state.currentSongList.length)];
     } else {
-        const currentIndex = state.currentSongList.findIndex(s => s.videoId === state.currentSong.videoId);
         nextSong = state.currentSongList[(currentIndex + 1) % state.currentSongList.length];
     }
 
     if (nextSong) {
+        minfo('PLAYER', 'Switching to next song', {
+            title: nextSong.title,
+            index: currentIndex + 1
+        });
         // Import showSongDetail dynamically to avoid circular imports
         import('./navigation.js').then(nav => nav.showSongDetail(nextSong));
     }
 }
 
 export function playPrevious() {
-    if (!state.currentSong || !state.currentSongList.length) return;
+    minfo('PLAYER', 'Requesting PREVIOUS song');
+    if (!state.currentSong || !state.currentSongList.length) {
+        mwarn('PLAYER', 'playPrevious() aborting: No songs available');
+        return;
+    }
 
     let prevSong;
+    const currentIndex = state.currentSongList.findIndex(s => s.videoId === state.currentSong.videoId);
+
     if (state.isShuffleOn) {
         prevSong = state.currentSongList[Math.floor(Math.random() * state.currentSongList.length)];
     } else {
-        const currentIndex = state.currentSongList.findIndex(s => s.videoId === state.currentSong.videoId);
         prevSong = state.currentSongList[(currentIndex - 1 + state.currentSongList.length) % state.currentSongList.length];
     }
 
     if (prevSong) {
+        minfo('PLAYER', 'Switching to previous song', {
+            title: prevSong.title,
+            index: currentIndex - 1
+        });
         import('./navigation.js').then(nav => nav.showSongDetail(prevSong));
     }
 }
 
 export function shufflePlaylist() {
     state.setIsShuffleOn(!state.isShuffleOn);
+    minfo('PLAYER', 'Shuffle toggled', { on: state.isShuffleOn });
     document.querySelectorAll('[data-action="shuffle"]').forEach(btn => {
         btn.classList.toggle('active', state.isShuffleOn);
     });
@@ -211,6 +273,7 @@ export function shufflePlaylist() {
 
 export function toggleRepeat() {
     state.setIsRepeatOn(!state.isRepeatOn);
+    minfo('PLAYER', 'Repeat toggled', { on: state.isRepeatOn });
     document.querySelectorAll('[data-action="repeat"]').forEach(btn => {
         btn.classList.toggle('active', state.isRepeatOn);
     });
@@ -219,7 +282,9 @@ export function toggleRepeat() {
 export function seekTo(percent) {
     if (!state.youtubePlayer || !state.playerReady) return;
     const duration = state.youtubePlayer.getDuration();
-    state.youtubePlayer.seekTo((percent / 100) * duration, true);
+    const targetTime = (percent / 100) * duration;
+    minfo('PLAYER', 'Seeking...', { percent, targetTime });
+    state.youtubePlayer.seekTo(targetTime, true);
 }
 
 export function setVolume(volume) {
@@ -230,6 +295,7 @@ export function setVolume(volume) {
 
 // Make YouTube API callback global
 window.onYouTubeIframeAPIReady = () => {
+    minfo('YTAPI', 'YouTube IFrame API is READY');
     state.setYouTubeApiReady(true);
 
     // Trigger initial load
