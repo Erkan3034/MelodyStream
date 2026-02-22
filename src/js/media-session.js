@@ -1,8 +1,5 @@
 // ── Media Session & Background Playback Stability ─────────────
-import * as state from './state.js';
-import { minfo, mwarn, merror, mevent, mstate } from './debug-logger.js';
-
-const SILENT_MP3 = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6v////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAQKAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+import { updatePlayPauseButtons } from './player.js';
 
 let silentAudio = null;
 let wakeLock = null;
@@ -82,11 +79,13 @@ export function initBackgroundPlaybackHook() {
     ensureSilentAudio();
 
     const startAudio = () => {
-        silentAudio.play().then(() => {
-            minfo('AUDIO', 'Silent audio başlatıldı');
-        }).catch((e) => {
-            mwarn('AUDIO', 'Silent audio başlatılamadı', e.message);
-        });
+        if (silentAudio && silentAudio.play) {
+            silentAudio.play().then(() => {
+                minfo('AUDIO', 'Silent audio (WebAudio) başlatıldı');
+            }).catch((e) => {
+                mwarn('AUDIO', 'Silent audio başlatılamadı', e.message);
+            });
+        }
 
         _isInitialized = true;
         registerMediaHandlers(); // Initial registration
@@ -102,18 +101,41 @@ export function initBackgroundPlaybackHook() {
 
 function ensureSilentAudio() {
     if (silentAudio) return;
-    silentAudio = new Audio(SILENT_MP3);
-    silentAudio.loop = true;
-    silentAudio.volume = 0.05;
 
-    silentAudio.addEventListener('pause', () => {
-        if (state.isPlaying) {
-            mwarn('AUDIO', 'Silent audio durdu! state.isPlaying=true → yeniden başlatılıyor');
-            setTimeout(() => {
-                if (state.isPlaying) silentAudio.play().catch(() => { });
-            }, 1000);
-        }
-    });
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) throw new Error('WebAudio not supported');
+
+        const ctx = new AudioContext();
+
+        // Create a silent buffer (1 second, 1 channel, 22050hz)
+        const buffer = ctx.createBuffer(1, 22050, 22050);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+        source.connect(ctx.destination);
+        source.start();
+
+        // Store ctx as silentAudio so we can check/restart it
+        silentAudio = {
+            _ctx: ctx,
+            _source: source,
+            paused: false,
+            play: async () => {
+                if (ctx.state === 'suspended') await ctx.resume();
+                silentAudio.paused = false;
+            },
+            pause: () => {
+                silentAudio.paused = true;
+            }
+        };
+
+        minfo('AUDIO', 'Silent audio (WebAudio) oluşturuldu');
+    } catch (e) {
+        merror('AUDIO', 'WebAudio oluşturulamadı', e.message);
+        // Fallback dummy object to prevent crashes
+        silentAudio = { paused: false, play: async () => { }, pause: () => { } };
+    }
 }
 
 export function enableBackgroundPlayback() {
@@ -252,5 +274,18 @@ document.addEventListener('visibilitychange', () => {
         minfo('VISIBILITY', 'Ön plana döndü — enableBackgroundPlayback + requestWakeLock');
         enableBackgroundPlayback();
         requestWakeLock();
+
+        // Bug 3 Fix: If YT was force-paused while hidden, resume it
+        if (state.youtubePlayer && state.playerReady) {
+            const ps = state.youtubePlayer.getPlayerState();
+            if (ps === 2 || ps === -1) {  // PAUSED or UNSTARTED
+                minfo('VISIBILITY', 'Ön plana döndü — force-paused player resume ediliyor');
+                state.youtubePlayer.playVideo();
+
+                // User addition: Immediate state update to prevent UI flicker
+                state.setIsPlaying(true);
+                updatePlayPauseButtons();
+            }
+        }
     }
 });
