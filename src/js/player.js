@@ -142,7 +142,7 @@ export function playSong(song) {
         state.youtubePlayer.loadVideoById(song.videoId);
     }
 
-    // Media Session Update
+    // Immediate Media Session Update (don't wait for YT event)
     updateMediaSession(song, {
         onPlay: () => togglePlayPause(),
         onPause: () => togglePlayPause(),
@@ -153,21 +153,21 @@ export function playSong(song) {
 }
 
 // ── Background Heartbeat ───────────────────────────────────────
-// Monitors player health every 2s, especially when page is hidden.
+// Monitors player health every 1s, especially when page is hidden.
 setInterval(() => {
     if (state.isPlaying && state.youtubePlayer && state.playerReady) {
         try {
             const ps = state.youtubePlayer.getPlayerState();
-            // If we think we're playing but YT is paused (state 2), resume.
-            // This bypasses many browser background throttling mechanisms.
-            if (ps === 2 && document.hidden) {
+            // In the background, YT often stutters to PAUSED (2) or stays UNSTARTED (-1)
+            if ((ps === 2 || ps === -1 || ps === 3) && document.hidden) {
                 console.debug('[Heartbeat] Resuming background playback...');
                 state.youtubePlayer.playVideo();
                 enableBackgroundPlayback();
+                updateMediaSessionPlaybackState(true);
             }
         } catch (e) { }
     }
-}, 2000);
+}, 1000); // 1s frequency for high-importance background play
 
 export function togglePlayPause() {
     if (!state.youtubePlayer || !state.playerReady) return;

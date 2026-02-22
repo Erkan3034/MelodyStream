@@ -1,28 +1,52 @@
-// =========================================
-// MelodyStream — Media Session API
-// Background playback & notification controls
-// =========================================
-
-import * as state from './state.js';
-
 // ── Silent audio keep-alive ────────────────────────────────────
+// Proactive strategy: start early, never stop, and pulse to keep main thread alive.
 const SILENT_MP3 = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6v////////////////////////////////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAQKAAAAAAAAASDs90hvAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
 
 let silentAudio = null;
 let wakeLock = null;
 let _resumeAfterHide = false;
 let _sessionHeartbeat = null;
+let _isInitialized = false;
+
+/**
+ * Initializes the silent audio keep-alive. 
+ * MUST be called on a user gesture (first click/touch).
+ */
+export function initBackgroundPlaybackHook() {
+    if (_isInitialized) return;
+    ensureSilentAudio();
+
+    const startAudio = () => {
+        silentAudio.play().catch(() => { });
+        _isInitialized = true;
+        console.debug('[MediaSession] Proactive heartbeat started.');
+
+        // Remove listeners
+        document.removeEventListener('click', startAudio);
+        document.removeEventListener('touchstart', startAudio);
+    };
+
+    document.addEventListener('click', startAudio, { once: true });
+    document.addEventListener('touchstart', startAudio, { once: true });
+}
 
 function ensureSilentAudio() {
     if (silentAudio) return;
     silentAudio = new Audio(SILENT_MP3);
     silentAudio.loop = true;
-    silentAudio.volume = 0.01; // Slighting higher for some browsers to detect activity
+    silentAudio.volume = 0.001; // Extremely quiet but not muted
 
-    // Recovery if the audio stalls
+    // Recovery if the audio stalls or the OS pauses it
     silentAudio.addEventListener('pause', () => {
-        if (state.isPlaying) {
-            setTimeout(() => { if (state.isPlaying) silentAudio.play().catch(() => { }); }, 100);
+        if (state.isPlaying || _isInitialized) {
+            setTimeout(() => silentAudio.play().catch(() => { }), 100);
+        }
+    });
+
+    // Pulse: nudge the main thread every time the loop repeats
+    silentAudio.addEventListener('timeupdate', () => {
+        if (silentAudio.currentTime > 1.5) {
+            silentAudio.currentTime = 0; // Force loop nudge
         }
     });
 }
@@ -31,19 +55,15 @@ export function enableBackgroundPlayback() {
     ensureSilentAudio();
     if (silentAudio.paused) {
         silentAudio.play().catch(() => {
-            const tryOnce = () => {
-                silentAudio.play().catch(() => { });
-                document.removeEventListener('click', tryOnce);
-                document.removeEventListener('touchstart', tryOnce);
-            };
-            document.addEventListener('click', tryOnce, { once: true });
-            document.addEventListener('touchstart', tryOnce, { once: true });
+            // If play fails, we rely on the next interaction
+            initBackgroundPlaybackHook();
         });
     }
 }
 
 export function disableBackgroundPlayback() {
-    silentAudio?.pause();
+    // We don't actually stop the silent audio anymore, we just stop the heartbeat
+    // This keeps the audio context alive for the next track
     stopSessionHeartbeat();
 }
 
@@ -75,7 +95,7 @@ function handleVisibilityChange() {
             enableBackgroundPlayback();
         }
     } else {
-        if (_resumeAfterHide && state.isPlaying) {
+        if (state.isPlaying) {
             _resumeAfterHide = false;
             setTimeout(() => {
                 const player = state.youtubePlayer;
@@ -108,12 +128,15 @@ export function updateMediaSession(song, handlers) {
         album: 'MelodyStream',
         artwork: [
             { src: song.thumbnail, sizes: '96x96', type: 'image/jpeg' },
+            { src: song.thumbnail, sizes: '128x128', type: 'image/jpeg' },
             { src: song.thumbnail, sizes: '192x192', type: 'image/jpeg' },
+            { src: song.thumbnail, sizes: '256x256', type: 'image/jpeg' },
+            { src: song.thumbnail, sizes: '384x384', type: 'image/jpeg' },
             { src: song.thumbnail, sizes: '512x512', type: 'image/jpeg' },
         ],
     });
 
-    // Register handlers
+    // Register handlers once and keep them
     const actionHandlers = [
         ['play', handlers.onPlay],
         ['pause', handlers.onPause],
@@ -128,9 +151,7 @@ export function updateMediaSession(song, handlers) {
     actionHandlers.forEach(([action, handler]) => {
         try {
             navigator.mediaSession.setActionHandler(action, handler);
-        } catch (e) {
-            console.warn(`MediaSession action ${action} not supported.`);
-        }
+        } catch (e) { }
     });
 
     updateMediaSessionPlaybackState(state.isPlaying);
@@ -156,16 +177,16 @@ export function updateMediaSessionPosition(currentTime, duration) {
 }
 
 // ── Session Heartbeat ──────────────────────────────────────────
-// Periodically re-syncs state and ensures handlers are active
+// High-frequency re-sync to prevent OS suspension
 function startSessionHeartbeat() {
     if (_sessionHeartbeat) return;
     _sessionHeartbeat = setInterval(() => {
-        if (state.isPlaying && _lastMetadata && _lastHandlers) {
-            // Re-sync basic state to keep OS from killing the session
+        if (state.isPlaying) {
+            // Keep the session "warm"
             updateMediaSessionPlaybackState(true);
             enableBackgroundPlayback();
         }
-    }, 5000);
+    }, 2000); // 2s is safer for PWA
 }
 
 function stopSessionHeartbeat() {

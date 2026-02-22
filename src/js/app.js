@@ -12,6 +12,7 @@ import { renderSearchSection } from './search.js';
 import { renderHomeSection, loadRecommendedMusic } from './ui.js';
 import { showSongDetail, goBack, showPlayHistory, initSidebar, initSwipeGestures } from './navigation.js';
 import { renderProfileSection, restoreSession } from './auth-ui.js';
+import { initBackgroundPlaybackHook } from './media-session.js';
 
 import '../css/base.css';
 import '../css/layout.css';
@@ -35,6 +36,7 @@ window.addEventListener('DOMContentLoaded', () => {
     initPlayerBarControls();
     initPlayerBarFavorite();
     initNavItems();
+    initBackgroundPlaybackHook(); // Trigger on first interaction
 });
 
 // ---- Tab Bar Navigation ----
