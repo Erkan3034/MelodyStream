@@ -20,6 +20,7 @@ export let currentView = 'home';
 // Playback Modes
 export let isShuffleOn = false;
 export let isRepeatOn = false;
+export let userPaused = false;
 
 // Data — favorites are empty on startup if user is logged in (will be loaded from backend)
 // This prevents duplicates caused by localStorage + backend both filling the list
@@ -43,6 +44,7 @@ export function setCurrentSongList(list) { currentSongList = list; }
 export function setCurrentView(view) { currentView = view; }
 export function setIsShuffleOn(on) { isShuffleOn = on; }
 export function setIsRepeatOn(on) { isRepeatOn = on; }
+export function setUserPaused(val) { userPaused = val; }
 export function setFavorites(favs) { favorites = favs; }
 export function setPlaylists(pls) { playlists = pls; }
 export function setPlayHistory(history) { playHistory = history; }

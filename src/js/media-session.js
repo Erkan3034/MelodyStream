@@ -85,10 +85,6 @@ function ensureSilentAudio() {
             }, 1000);
         }
     });
-
-    silentAudio.addEventListener('timeupdate', () => {
-        if (silentAudio.currentTime > 2.0) silentAudio.currentTime = 0;
-    });
 }
 
 export function enableBackgroundPlayback() {
@@ -118,6 +114,9 @@ export function releaseWakeLock() {
 // ── Metadata & Session Management ──────────────────────────────
 export function updateMediaSession(song, handlers) {
     if (!('mediaSession' in navigator)) return;
+
+    stopSessionHeartbeat();
+    _sessionHeartbeat = null;
 
     _currentHandlers = handlers;
     registerMediaHandlers(); // Refresh handlers on every song
@@ -177,7 +176,7 @@ function startSessionHeartbeat() {
             // Recovery nudge for YouTube iframe if swallowed by background
             if (document.hidden && state.youtubePlayer && state.playerReady) {
                 const ps = state.youtubePlayer.getPlayerState();
-                if (ps === 2 || ps === -1 || ps === 3) {
+                if ((ps === 2 || ps === -1 || ps === 3) && !state.userPaused) {
                     console.debug('[Heartbeat] Proactive background resume...');
                     state.youtubePlayer.playVideo();
                 }
@@ -186,7 +185,7 @@ function startSessionHeartbeat() {
     }, 4000); // 4s for absolute stability
 }
 
-function stopSessionHeartbeat() {
+export function stopSessionHeartbeat() {
     if (_sessionHeartbeat) {
         clearInterval(_sessionHeartbeat);
         _sessionHeartbeat = null;

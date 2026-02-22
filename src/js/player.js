@@ -22,10 +22,8 @@ function updatePlayPauseButtons() {
         detailBtn.setAttribute('aria-label', label);
     }
 
-    // Only update Media Session if we aren't in the background to avoid flicker
-    if (!document.hidden) {
-        updateMediaSessionPlaybackState(state.isPlaying);
-    }
+    // Always update Media Session playback state (Fix 5)
+    updateMediaSessionPlaybackState(state.isPlaying);
 }
 
 function updateProgress() {
@@ -79,10 +77,6 @@ export function playSong(song) {
     enableBackgroundPlayback();
     requestWakeLock();
 
-    if (state.youtubePlayer) {
-        state.youtubePlayer.stopVideo();
-    }
-
     state.setCurrentSong(song);
 
     // Update UI (Multi-target sync)
@@ -133,13 +127,9 @@ export function playSong(song) {
                         requestWakeLock();
                         updateMediaSessionPlaybackState(true);
                     } else if (event.data === YT.PlayerState.PAUSED) {
-                        // Crucial: Only sync pause if NOT hidden. 
-                        // If hidden, the browser might have forced pause — we'll fight back via heartbeat.
-                        if (!document.hidden) {
-                            state.setIsPlaying(false);
-                            updatePlayPauseButtons();
-                            updateMediaSessionPlaybackState(false);
-                        }
+                        state.setIsPlaying(false);
+                        updatePlayPauseButtons();
+                        updateMediaSessionPlaybackState(false);
                     }
                 }
             }
@@ -166,9 +156,11 @@ export function togglePlayPause() {
     if (!state.youtubePlayer || !state.playerReady) return;
     const ps = state.youtubePlayer.getPlayerState();
     if (ps === YT.PlayerState.PLAYING) {
+        state.setUserPaused(true);
         state.youtubePlayer.pauseVideo();
         state.setIsPlaying(false);
     } else {
+        state.setUserPaused(false);
         state.youtubePlayer.playVideo();
         state.setIsPlaying(true);
         enableBackgroundPlayback();
