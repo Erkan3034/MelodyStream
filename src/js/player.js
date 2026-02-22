@@ -22,7 +22,10 @@ function updatePlayPauseButtons() {
         detailBtn.setAttribute('aria-label', label);
     }
 
-    updateMediaSessionPlaybackState(state.isPlaying);
+    // Only update Media Session if we aren't in the background to avoid flicker
+    if (!document.hidden) {
+        updateMediaSessionPlaybackState(state.isPlaying);
+    }
 }
 
 function updateProgress() {
@@ -156,22 +159,8 @@ export function playSong(song) {
     });
 }
 
-// ── Background Heartbeat ───────────────────────────────────────
-// Monitors player health every 1s, especially when page is hidden.
-setInterval(() => {
-    if (state.isPlaying && state.youtubePlayer && state.playerReady) {
-        try {
-            const ps = state.youtubePlayer.getPlayerState();
-            // In the background, YT often stutters to PAUSED (2), stays UNSTARTED (-1), or gets stuck BUFFERING (3)
-            if (document.hidden && (ps === 2 || ps === -1 || ps === 3)) {
-                console.debug('[Heartbeat] Resuming background playback...');
-                state.youtubePlayer.playVideo();
-                enableBackgroundPlayback();
-                updateMediaSessionPlaybackState(true);
-            }
-        } catch (e) { }
-    }
-}, 1000);
+// ── Background Heartbeat (Removed aggressive flicker source) ──
+// We now rely on the 2s heartbeat in media-session.js which is more stable.
 
 export function togglePlayPause() {
     if (!state.youtubePlayer || !state.playerReady) return;
