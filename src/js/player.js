@@ -7,7 +7,9 @@ import * as state from './state.js';
 import { updateMediaSession, enableBackgroundPlayback, updateMediaSessionPlaybackState, updateMediaSessionPosition, requestWakeLock } from './media-session.js';
 import { minfo, mwarn, merror, mevent, mstate, ytStateLabel } from './debug-logger.js';
 
-function updatePlayPauseButtons() {
+let _isLoadingNewVideo = false;
+
+export function updatePlayPauseButtons() {
     const icon = state.isPlaying ? 'fa-pause' : 'fa-play';
     const label = state.isPlaying ? 'Duraklat' : 'Oynat';
 
@@ -134,7 +136,8 @@ export function playSong(song) {
                     mstate('YT_STATE', label, {
                         hidden: document.hidden,
                         isPlaying: state.isPlaying,
-                        userPaused: state.userPaused
+                        userPaused: state.userPaused,
+                        loadingNew: _isLoadingNewVideo
                     });
 
                     if (event.data === YT.PlayerState.ENDED) {
@@ -143,12 +146,21 @@ export function playSong(song) {
                         else playNext();
                     } else if (event.data === YT.PlayerState.PLAYING) {
                         minfo('PLAYER', 'Playback started');
+                        if (_isLoadingNewVideo) {
+                            minfo('PLAYER', 'Yeni video yüklemesi tamamlandı (_isLoadingNewVideo = false)');
+                            _isLoadingNewVideo = false;
+                        }
                         state.setIsPlaying(true);
                         updatePlayPauseButtons();
                         enableBackgroundPlayback();
                         requestWakeLock();
                         updateMediaSessionPlaybackState(true);
                     } else if (event.data === YT.PlayerState.PAUSED) {
+                        if (_isLoadingNewVideo) {
+                            minfo('PLAYER', 'Ara geçiş (PAUSED) — atlanıyor (_isLoadingNewVideo=true)');
+                            return;
+                        }
+
                         if (state.userPaused) {
                             minfo('PLAYER', 'Paused by user');
                         } else {
@@ -166,13 +178,17 @@ export function playSong(song) {
                 },
                 onError: (event) => {
                     merror('PLAYER', 'YouTube error', { code: event.data });
+                    _isLoadingNewVideo = false;
                 }
             }
         });
         state.setYoutubePlayer(player);
     } else {
-        minfo('PLAYER', 'Loading video by ID', { videoId: song.videoId });
+        minfo('PLAYER', 'Loading video by ID (set _isLoadingNewVideo=true)', { videoId: song.videoId });
+        _isLoadingNewVideo = true;
         state.youtubePlayer.loadVideoById(song.videoId);
+        state.setIsPlaying(true);
+        updatePlayPauseButtons();
     }
 
     // Immediate Media Session Update (don't wait for YT event)
